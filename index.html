@@ -1,0 +1,562 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>GéoQuiz</title>
+    <link rel="stylesheet" href="css/style.css" />
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&display=swap"
+      rel="stylesheet" />
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+  </head>
+  <body>
+    <!-- NAV -->
+    <nav>
+      <div class="nav-logo">GéoQuiz</div>
+      <div class="nav-tabs">
+        <button class="nav-tab active" onclick="goTo('menu')">
+          🏠 Accueil
+        </button>
+        <button class="nav-tab" onclick="goTo('quiz')">🎯 Quiz</button>
+        <button class="nav-tab" onclick="goTo('map')">🌍 Carte</button>
+        <button class="nav-tab" onclick="goTo('board')">🏆 Classement</button>
+      </div>
+    </nav>
+
+    <div id="toast"></div>
+
+    <!-- ════ LOADER ════ -->
+    <div class="screen active" id="s-loader" style="display: flex">
+      <div class="ld-logo">GéoQuiz</div>
+      <div class="ld-bar-w">
+        <div class="ld-bar" id="lbar" style="width: 5%"></div>
+      </div>
+      <div class="ld-txt" id="ltxt">Chargement des pays…</div>
+    </div>
+
+    <!-- ════ MENU ════ -->
+    <div class="screen" id="s-menu">
+      <div class="menu-wrap">
+        <div class="menu-hero">GéoQuiz</div>
+        <div class="menu-sub">Drapeaux · Capitales · Pays</div>
+        <div class="pill-info" id="pillInfo">Chargement…</div>
+
+        <div class="modes-grid">
+          <div class="mode-card selected" data-mode="flag2country">
+            <div class="mc-icon">🏳️</div>
+            <div class="mc-name">Quel pays ?</div>
+            <div class="mc-desc">
+              Un drapeau → trouvez le nom parmi 4 choix.
+            </div>
+          </div>
+          <div class="mode-card" data-mode="country2flag">
+            <div class="mc-icon">🔍</div>
+            <div class="mc-name">Quel drapeau ?</div>
+            <div class="mc-desc">Un nom de pays → trouvez le bon drapeau.</div>
+          </div>
+          <div class="mode-card" data-mode="flag2capital">
+            <div class="mc-icon">🏛️</div>
+            <div class="mc-name">Drapeau → Capitale</div>
+            <div class="mc-desc">
+              Un drapeau → trouvez la capitale parmi 4 choix.
+            </div>
+          </div>
+          <div class="mode-card" data-mode="write-country">
+            <div class="mc-icon">✍️</div>
+            <div class="mc-name">Écrire le pays</div>
+            <div class="mc-desc">
+              Un drapeau → tapez le nom (approximatif accepté !).
+            </div>
+          </div>
+          <div class="mode-card" data-mode="write-capital">
+            <div class="mc-icon">🗺️</div>
+            <div class="mc-name">Écrire la capitale</div>
+            <div class="mc-desc">
+              Un pays → tapez sa capitale (approximatif accepté !).
+            </div>
+          </div>
+        </div>
+
+        <div class="opts-row">
+          <div class="opt-g">
+            <div class="opt-lbl">Région</div>
+            <div class="pill-row" id="regionPills">
+              <button class="pill active" data-region="all">Monde</button>
+              <button class="pill" data-region="Europe">Europe</button>
+              <button class="pill" data-region="Americas">Amériques</button>
+              <button class="pill" data-region="Asia">Asie</button>
+              <button class="pill" data-region="Africa">Afrique</button>
+              <button class="pill" data-region="Oceania">Océanie</button>
+            </div>
+          </div>
+          <div class="opt-g">
+            <div class="opt-lbl">Questions</div>
+            <div class="pill-row" id="qcPills">
+              <button class="pill active" data-n="10">10</button>
+              <button class="pill" data-n="20">20</button>
+              <button class="pill" data-n="30">30</button>
+            </div>
+          </div>
+        </div>
+        <button class="start-btn" onclick="startQuiz()">Jouer →</button>
+      </div>
+    </div>
+
+    <!-- ════ QUIZ ════ -->
+    <div class="screen" id="s-quiz">
+      <div class="quiz-wrap">
+        <div class="topbar">
+          <button class="back-btn" onclick="goTo('menu')">← Menu</button>
+          <div class="qstats">
+            <div class="qstat good"><strong id="sOk">0</strong>Correct</div>
+            <div class="qstat bad"><strong id="sErr">0</strong>Raté</div>
+            <div class="qstat"><strong id="sN">1/10</strong>Q.</div>
+          </div>
+        </div>
+        <div class="prog-w">
+          <div class="prog-b" id="progB" style="width: 0%"></div>
+        </div>
+        <div class="qcard" id="qcard">
+          <div class="q-lbl" id="qLbl"></div>
+          <div class="flag-wrap" id="flagWrap" style="display: none">
+            <div class="skel" id="flagSkel"></div>
+            <img id="flagImg" src="" alt="" />
+          </div>
+          <div class="q-txt" id="qTxt"></div>
+          <div class="q-sub" id="qSub" style="display: none"></div>
+          <div class="ans-grid" id="ansGrid"></div>
+          <div class="inp-w" id="inpW" style="display: none">
+            <input
+              class="txt-in"
+              id="txtIn"
+              autocomplete="off"
+              spellcheck="false" />
+            <button class="sub-btn" onclick="submitTxt()">OK</button>
+          </div>
+          <div class="feedback" id="fb"></div>
+          <button class="next-btn" id="nextBtn" onclick="nextQ()">
+            Question suivante →
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════ RESULTS ════ -->
+    <div class="screen" id="s-results">
+      <div class="res-wrap">
+        <div class="arc-w">
+          <svg class="arc-svg" width="160" height="160" viewBox="0 0 160 160">
+            <defs>
+              <linearGradient id="arcG" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stop-color="#f5c842" />
+                <stop offset="100%" stop-color="#e8533a" />
+              </linearGradient>
+            </defs>
+            <circle class="arc-bg" cx="80" cy="80" r="70" />
+            <circle
+              class="arc-fg"
+              id="arcFg"
+              cx="80"
+              cy="80"
+              r="70"
+              stroke-dasharray="440"
+              stroke-dashoffset="440" />
+          </svg>
+          <div class="arc-in">
+            <div class="arc-pct" id="arcPct">0%</div>
+            <div class="arc-lbl">Score</div>
+          </div>
+        </div>
+        <div class="res-title" id="resTitle"></div>
+        <div class="res-sub" id="resSub"></div>
+        <div class="res-det" id="resDet"></div>
+
+        <!-- Save score box -->
+        <div class="save-score-box">
+          <div class="save-title">💾 Enregistrer dans le classement</div>
+          <div class="save-row">
+            <input
+              class="save-inp"
+              id="saveName"
+              placeholder="Ton prénom"
+              autocomplete="off" />
+            <select class="save-sel" id="saveClasseSel">
+              <option value="">— Choisis ta classe —</option>
+            </select>
+          </div>
+          <div
+            id="saveNoClass"
+            style="
+              display: none;
+              font-size: 0.74rem;
+              color: var(--muted);
+              padding: 0.2rem 0;
+            ">
+            ⚠️ Aucune classe disponible — demande à ton professeur.
+          </div>
+          <button class="save-btn" onclick="saveScore()" style="width: 100%">
+            Enregistrer mon score →
+          </button>
+        </div>
+
+        <div class="res-btns">
+          <button class="start-btn" onclick="startQuiz()">Rejouer</button>
+          <button class="btn-ghost" onclick="goTo('menu')">Menu</button>
+          <button class="btn-ghost" onclick="goTo('board')">
+            Voir le classement
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════ CARTE ════ -->
+    <div class="screen" id="s-map">
+      <div class="map-layout">
+        <div id="map-container">
+          <div id="leaflet-map"></div>
+        </div>
+        <div class="map-panel">
+          <div class="map-header">
+            <div class="map-title">🌍 Trouvez les pays</div>
+            <div class="map-score-row">
+              <div class="map-stat"><strong id="mFound">0</strong>Trouvés</div>
+              <div class="map-stat"><strong id="mTotal">—</strong>Total</div>
+              <div class="map-stat"><strong id="mPct">0%</strong>Score</div>
+            </div>
+            <div class="map-inp-w">
+              <input
+                class="map-inp"
+                id="mapInp"
+                placeholder="Tapez un pays…"
+                autocomplete="off"
+                spellcheck="false" />
+              <button class="map-sub-btn" onclick="mapSubmit()">→</button>
+            </div>
+            <div class="map-fb" id="mapFb"></div>
+          </div>
+          <div class="region-tabs">
+            <button class="rtab active" onclick="mapRegion('all', this)">
+              Tout
+            </button>
+            <button class="rtab" onclick="mapRegion('Europe', this)">
+              Europe
+            </button>
+            <button class="rtab" onclick="mapRegion('Americas', this)">
+              Amériques
+            </button>
+            <button class="rtab" onclick="mapRegion('Asia', this)">Asie</button>
+            <button class="rtab" onclick="mapRegion('Africa', this)">
+              Afrique
+            </button>
+            <button class="rtab" onclick="mapRegion('Oceania', this)">
+              Océanie
+            </button>
+          </div>
+          <div class="countries-list" id="countriesList"></div>
+          <button class="map-reset" onclick="resetMap()">
+            ↺ Réinitialiser la carte
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════ CLASSEMENT ════ -->
+    <div class="screen" id="s-board">
+      <div class="board-wrap">
+        <div class="board-top">
+          <div class="board-title">🏆 Classement</div>
+          <div class="board-actions">
+            <button class="btn-sm" onclick="openAdmin()">🔑 Admin</button>
+          </div>
+        </div>
+
+        <!-- Add panel -->
+        <div class="add-panel" id="addPanel">
+          <div class="add-panel-title">Ajouter un score manuellement</div>
+          <div class="add-form">
+            <div class="add-field">
+              <label class="add-lbl">Prénom</label>
+              <input
+                class="add-inp"
+                id="aN"
+                placeholder="Ex: Marie"
+                style="width: 130px"
+                autocomplete="off" />
+            </div>
+            <div class="add-field">
+              <label class="add-lbl">Classe</label>
+              <select class="add-sel" id="aCsel" style="width: 130px">
+                <option value="">— Choisir —</option>
+                <option value="__new__">+ Nouvelle…</option>
+              </select>
+            </div>
+            <div class="add-field" id="aNewF" style="display: none">
+              <label class="add-lbl">Nouvelle classe</label>
+              <input
+                class="add-inp"
+                id="aNew"
+                placeholder="5ème A"
+                style="width: 130px" />
+            </div>
+            <div class="add-field">
+              <label class="add-lbl">Mode</label>
+              <select class="add-sel" id="aMode" style="width: 150px">
+                <option value="flag2country">Quel pays ?</option>
+                <option value="country2flag">Quel drapeau ?</option>
+                <option value="flag2capital">Drapeau → Capitale</option>
+                <option value="write-country">Écrire le pays</option>
+                <option value="write-capital">Écrire la capitale</option>
+                <option value="map">Carte monde</option>
+              </select>
+            </div>
+            <div class="add-field">
+              <label class="add-lbl">Score</label>
+              <input
+                class="add-inp"
+                id="aScore"
+                type="number"
+                min="0"
+                placeholder="17"
+                style="width: 70px" />
+            </div>
+            <div class="add-field">
+              <label class="add-lbl">/ Total</label>
+              <input
+                class="add-inp"
+                id="aTotal"
+                type="number"
+                min="1"
+                value="20"
+                style="width: 70px" />
+            </div>
+            <button class="add-ok-btn" onclick="addManual()">
+              Enregistrer
+            </button>
+          </div>
+        </div>
+
+        <div class="bstats" id="bStats"></div>
+
+        <div class="bfilters">
+          <div class="bfg">
+            <div class="bflbl">Classe</div>
+            <div class="pill-row" id="bClassPills"></div>
+          </div>
+          <div class="bfg">
+            <div class="bflbl">Mode</div>
+            <div class="pill-row" id="bModePills"></div>
+          </div>
+          <div class="bfg">
+            <div class="bflbl">Trier</div>
+            <div class="pill-row">
+              <button class="pill active" onclick="bSort('pct', this)">
+                Score
+              </button>
+              <button class="pill" onclick="bSort('date', this)">Date</button>
+              <button class="pill" onclick="bSort('name', this)">Nom</button>
+            </div>
+          </div>
+        </div>
+
+        <div id="podiumWrap"></div>
+
+        <div class="btable">
+          <div class="bthead">
+            <span class="tc-rank">#</span>
+            <span class="tc-name">Élève</span>
+            <span class="tc-classe">Classe</span>
+            <span class="tc-mode">Mode</span>
+            <span class="tc-score">Score</span>
+            <span class="tc-pct">%</span>
+            <span class="tc-date">Date</span>
+          </div>
+          <div id="bBody"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════ MODAL ADMIN ════ -->
+    <div
+      id="adminOverlay"
+      style="
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.7);
+        z-index: 900;
+        backdrop-filter: blur(6px);
+        align-items: center;
+        justify-content: center;
+      ">
+      <div
+        style="
+          background: var(--card);
+          border: 1px solid var(--border);
+          border-radius: 16px;
+          padding: 2rem;
+          width: min(440px, 92vw);
+          animation: slideUp 0.25s ease;
+        ">
+        <!-- Écran mot de passe -->
+        <div id="adminLogin">
+          <div
+            style="
+              font-family: &quot;Bebas Neue&quot;, sans-serif;
+              font-size: 1.6rem;
+              color: var(--accent);
+              margin-bottom: 1rem;
+            ">
+            🔑 Accès Professeur
+          </div>
+          <div
+            style="
+              font-size: 0.82rem;
+              color: var(--muted);
+              margin-bottom: 1rem;
+            ">
+            Entrez le mot de passe pour gérer les classes.
+          </div>
+          <div style="display: flex; gap: 0.6rem">
+            <input
+              id="adminPwdInp"
+              type="password"
+              class="add-inp"
+              placeholder="Mot de passe…"
+              style="flex: 1"
+              onkeydown="if (event.key === 'Enter') checkAdminPwd();" />
+            <button class="add-ok-btn" onclick="checkAdminPwd()">OK</button>
+          </div>
+          <div
+            id="adminPwdErr"
+            style="
+              color: var(--error);
+              font-size: 0.76rem;
+              margin-top: 0.5rem;
+              display: none;
+            ">
+            ❌ Mot de passe incorrect
+          </div>
+          <button
+            onclick="closeAdmin()"
+            style="
+              margin-top: 1rem;
+              background: none;
+              border: none;
+              color: var(--muted);
+              cursor: pointer;
+              font-size: 0.8rem;
+            ">
+            Annuler
+          </button>
+        </div>
+
+        <!-- Écran gestion classes -->
+        <div id="adminPanel" style="display: none">
+          <div
+            style="
+              display: flex;
+              justify-content: space-between;
+              align-items: center;
+              margin-bottom: 1.2rem;
+            ">
+            <div
+              style="
+                font-family: &quot;Bebas Neue&quot;, sans-serif;
+                font-size: 1.6rem;
+                color: var(--accent);
+              ">
+              🏫 Gestion des classes
+            </div>
+            <button
+              onclick="closeAdmin()"
+              style="
+                background: none;
+                border: none;
+                color: var(--muted);
+                cursor: pointer;
+                font-size: 1.2rem;
+              ">
+              ✕
+            </button>
+          </div>
+          <!-- Liste des classes -->
+          <div
+            id="adminClassesList"
+            style="
+              margin-bottom: 1rem;
+              max-height: 220px;
+              overflow-y: auto;
+              display: flex;
+              flex-direction: column;
+              gap: 0.4rem;
+            "></div>
+          <!-- Ajouter une classe -->
+          <div style="display: flex; gap: 0.6rem; margin-bottom: 0.5rem">
+            <input
+              id="adminNewClasse"
+              class="add-inp"
+              placeholder="Ex: 6ème A"
+              style="flex: 1"
+              onkeydown="if (event.key === 'Enter') adminAddClasse();" />
+            <button class="add-ok-btn" onclick="adminAddClasse()">
+              ➕ Ajouter
+            </button>
+          </div>
+          <div style="font-size: 0.72rem; color: var(--muted)">
+            Les élèves verront uniquement ces classes dans leur liste.
+          </div>
+
+          <!-- Actions scores -->
+          <div
+            style="
+              margin-top: 1.2rem;
+              padding-top: 1rem;
+              border-top: 1px solid var(--border);
+            ">
+            <div
+              style="
+                font-family: &quot;Bebas Neue&quot;, sans-serif;
+                font-size: 1.1rem;
+                color: var(--accent);
+                margin-bottom: 0.7rem;
+              ">
+              📊 Gestion des scores
+            </div>
+            <div style="display: flex; flex-wrap: wrap; gap: 0.5rem">
+              <button
+                class="btn-sm"
+                onclick="
+                  closeAdmin();
+                  toggleAddPanel();
+                ">
+                ➕ Ajouter un score
+              </button>
+              <button class="btn-sm" onclick="exportJSON()">
+                ⬇️ Exporter JSON
+              </button>
+              <label class="btn-sm" style="cursor: pointer"
+                >⬆️ Importer JSON<input
+                  type="file"
+                  accept=".json"
+                  style="display: none"
+                  onchange="importJSON(this)"
+              /></label>
+              <button class="btn-sm danger" onclick="resetBoard()">
+                🗑️ Tout effacer
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="js/script.js"></script>
+  </body>
+</html>
