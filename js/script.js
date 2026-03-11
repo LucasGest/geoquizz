@@ -50,6 +50,7 @@ let boardData = { entries: [], classes: [] };
 let bFilterClass = "all",
   bFilterMode = "all",
   bSortBy = "pct";
+let bPendingDel = null;
 let addPanelOpen = false;
 
 // ═══════════════════════════════════════════
@@ -80,6 +81,20 @@ function goTo(id) {
     renderBoard();
   }
 }
+
+// ── THEME TOGGLE ──
+function applyTheme(theme) {
+  document.documentElement.setAttribute("data-theme", theme);
+  const btn = document.getElementById("themeToggle");
+  if (btn) btn.textContent = theme === "light" ? "☀️" : "🌙";
+  localStorage.setItem("gq-theme", theme);
+}
+function toggleTheme() {
+  const current = document.documentElement.getAttribute("data-theme") || "dark";
+  applyTheme(current === "dark" ? "light" : "dark");
+}
+// Appliquer le thème sauvegardé au chargement
+applyTheme(localStorage.getItem("gq-theme") || "dark");
 
 // Table de secours pour les noms FR des pays qui peuvent manquer dans l'API
 const FR_NAMES = {
@@ -1679,7 +1694,24 @@ function bSetMode(m, btn) {
   btn.classList.add("active");
   renderBoard();
 }
-
+function bAskDel(id) {
+  bPendingDel = id;
+  renderBoard();
+}
+function bCancelDel() {
+  bPendingDel = null;
+  renderBoard();
+}
+async function bConfirmDel(id) {
+  try {
+    await scoresRef.child(id).remove();
+  } catch (e) {
+    toast("❌ Erreur suppression", "err");
+    return;
+  }
+  bPendingDel = null;
+  toast("🗑️ Score supprimé");
+}
 async function resetBoard() {
   if (!confirm("Effacer tout le classement ?")) return;
   try {
@@ -1897,6 +1929,7 @@ async function adminDelClasse(name) {
 //  EXPOSE GLOBALS — requis pour CodePen
 // ═══════════════════════════════════════════
 window.openAdmin = openAdmin;
+window.toggleTheme = toggleTheme;
 window.closeAdmin = closeAdmin;
 window.checkAdminPwd = checkAdminPwd;
 window.adminAddClasse = adminAddClasse;
@@ -1912,6 +1945,9 @@ window.resetMap = resetMap;
 window.bSort = bSort;
 window.bSetClass = bSetClass;
 window.bSetMode = bSetMode;
+window.bAskDel = bAskDel;
+window.bCancelDel = bCancelDel;
+window.bConfirmDel = bConfirmDel;
 window.resetBoard = resetBoard;
 window.toggleAddPanel = toggleAddPanel;
 function onAddClasseSel() {} // stub — plus de nouvelle classe manuelle

@@ -10,6 +10,20 @@
   --success: #4caf78;
   --error: #e8533a;
   --r: 12px;
+  --nav-bg: rgba(8, 8, 16, 0.95);
+  --grid-color: rgba(245, 200, 66, 0.025);
+}
+[data-theme="light"] {
+  --bg: #f4f4f0;
+  --surface: #eaeae4;
+  --card: #ffffff;
+  --border: #d8d8cc;
+  --text: #1a1a2e;
+  --muted: #8888a0;
+  --success: #2e8a52;
+  --error: #c0392b;
+  --nav-bg: rgba(244, 244, 240, 0.95);
+  --grid-color: rgba(180, 140, 0, 0.04);
 }
 * {
   margin: 0;
@@ -25,14 +39,17 @@ body {
   color: var(--text);
   font-family: "DM Sans", sans-serif;
   overflow-x: hidden;
+  transition:
+    background 0.3s,
+    color 0.3s;
 }
 body::before {
   content: "";
   position: fixed;
   inset: 0;
   background-image:
-    linear-gradient(rgba(245, 200, 66, 0.025) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(245, 200, 66, 0.025) 1px, transparent 1px);
+    linear-gradient(var(--grid-color) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-color) 1px, transparent 1px);
   background-size: 52px 52px;
   pointer-events: none;
   z-index: 0;
@@ -45,7 +62,7 @@ nav {
   left: 0;
   right: 0;
   height: 52px;
-  background: rgba(8, 8, 16, 0.95);
+  background: var(--nav-bg);
   backdrop-filter: blur(12px);
   border-bottom: 1px solid var(--border);
   display: flex;
@@ -54,6 +71,9 @@ nav {
   padding: 0 1.2rem;
   z-index: 500;
   gap: 0.8rem;
+  transition:
+    background 0.3s,
+    border-color 0.3s;
 }
 .nav-logo {
   font-family: "Bebas Neue", sans-serif;
@@ -87,6 +107,27 @@ nav {
 }
 .nav-tab.active {
   background: rgba(245, 200, 66, 0.1);
+  color: var(--accent);
+}
+
+/* ── THEME TOGGLE ── */
+.theme-toggle {
+  background: none;
+  border: 1.5px solid var(--border);
+  color: var(--muted);
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+.theme-toggle:hover {
+  border-color: var(--accent);
   color: var(--accent);
 }
 
