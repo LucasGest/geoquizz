@@ -1478,14 +1478,11 @@ firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 const scoresRef = db.ref("scores");
 
-// Écoute en temps réel → met à jour boardData + affichage dès qu'un score arrive
+// Écoute en temps réel → met à jour boardData.entries + affichage dès qu'un score arrive
 scoresRef.on("value", (snapshot) => {
   const data = snapshot.val() || {};
   const entries = Object.values(data);
-  const classes = [
-    ...new Set(entries.map((e) => e.classe).filter(Boolean)),
-  ].sort();
-  boardData = { entries, classes };
+  boardData.entries = entries;
   // Rafraîchir si l'onglet classement est visible
   if (document.getElementById("s-board").style.display !== "none") {
     refreshAddClassSel();
