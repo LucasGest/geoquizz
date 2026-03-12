@@ -1500,6 +1500,9 @@ nav {
 .leaflet-container {
   background: #0c0c18 !important;
 }
+[data-theme="light"] .leaflet-container {
+  background: #d4e4f0 !important;
+}
 .leaflet-control-attribution {
   display: none !important;
 }
