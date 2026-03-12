@@ -1,3 +1,4 @@
+
 'use strict';
  
 // ═══════════════════════════════════════════
@@ -155,6 +156,28 @@ const FR_NAMES = {
   'ATF':'Terres australes françaises','HMD':'Île Heard-et-Îles MacDonald',
   'BMU':'Bermudes','CYM':'Îles Caïmans','MSR':'Montserrat','AIA':'Anguilla',
   'NIU':'Niue','COK':'Îles Cook','TKL':'Tokelau','CXR':'Île Christmas',
+  // Pays dont le nom anglais de l'API est trompeur
+  'CZE':'République tchèque',
+  'XKX':'Kosovo',
+  'COD':'République démocratique du Congo',
+  'MKD':'Macédoine du Nord',
+  'PSE':'Palestine',
+  'VAT':'Vatican',
+  'TWN':'Taïwan',
+  'IRN':'Iran',
+  'LAO':'Laos',
+  'VNM':'Viêt Nam',
+  'PRK':'Corée du Nord',
+  'KOR':'Corée du Sud',
+  'GBR':'Royaume-Uni',
+  'USA':'États-Unis',
+  'ARE':'Émirats arabes unis',
+  'SAU':'Arabie saoudite',
+  'BOL':'Bolivie',
+  'VEN':'Venezuela',
+  'SWZ':'Eswatini',
+  'TLS':'Timor oriental',
+  'CPV':'Cap-Vert',
 };
  
 // Traductions françaises des capitales (cca3 → capitale en FR)
@@ -244,7 +267,7 @@ async function loadAll(){
           cca2: (c.cca2||'').toLowerCase(),
           cca3: c.cca3||'',
           region: c.region||'',
-          aliases: buildAliases(c.name, nameFr)
+          aliases: buildAliases(c.name, nameFr, c.cca3)
         };
       });
     geoData = gRaw;
@@ -274,7 +297,51 @@ async function loadAll(){
   }
 }
  
-function buildAliases(name, nameFr){
+// Formes alternatives françaises supplémentaires (pour le fuzzy match carte/quiz)
+const FR_ALIASES = {
+  'CZE':['Tchéquie','Rep. tchèque','Rép. tchèque'],
+  'COD':['RDC','Congo RDC','Congo démocratique','Rép. dém. du Congo'],
+  'COG':['Congo Brazzaville','République du Congo'],
+  'PRK':['Corée Nord','Corée-du-Nord'],
+  'KOR':['Corée Sud','Corée-du-Sud'],
+  'GBR':['Angleterre','Grande-Bretagne','UK'],
+  'USA':['Amérique','États Unis','Etats-Unis','Etats Unis','US'],
+  'ARE':['Émirats','Emirats'],
+  'SAU':['Arabie Saoudite'],
+  'RUS':['Fédération de Russie'],
+  'IRN':['Perse'],
+  'MMR':['Birmanie'],
+  'SWZ':['Swaziland'],
+  'TLS':['Timor-Leste','Timor-Oriental'],
+  'MKD':['Macédoine'],
+  'CPV':['Cap Vert'],
+  'STP':['São Tomé','Sao Tome'],
+  'TTO':['Trinité et Tobago','Trinidad'],
+  'KNA':['Saint-Kitts'],
+  'VCT':['Saint-Vincent'],
+  'TZA':['Tanzanie'],
+  'BIH':['Bosnie','Herzégovine'],
+  'ZAF':['Afrique du sud'],
+  'GNQ':['Guinée-Equatoriale'],
+  'PNG':['Papouasie'],
+  'CHN':['Chine populaire'],
+  'TWN':['Formose','Taiwan'],
+  'VNM':['Vietnam','Viet Nam'],
+  'PSE':['Territoires palestiniens','Gaza'],
+  'XKX':['Republique du Kosovo'],
+  'UKR':['Ukraïne'],
+  'MDA':['Moldavie','Moldova'],
+  'BLR':['Bélarus','Belarus'],
+  'KAZ':['Kazakstan'],
+  'UZB':['Ouzbekistan'],
+  'TKM':['Turkmenistan'],
+  'KGZ':['Kirghizie'],
+  'TJK':['Tadjikistan'],
+  'AZE':['Azerbaidjan'],
+  'MNG':['Mongolie extérieure'],
+};
+ 
+function buildAliases(name, nameFr, cca3){
   // Stocker les formes BRUTES (non normalisées) — la normalisation se fait à la recherche
   const s = new Set();
   const add = v => { if(v && v.trim()) s.add(v.trim()); };
@@ -284,6 +351,8 @@ function buildAliases(name, nameFr){
   if(name.translations){
     Object.values(name.translations).forEach(t => { add(t.common); add(t.official); });
   }
+  // Ajouter les formes alternatives françaises
+  if(cca3 && FR_ALIASES[cca3]) FR_ALIASES[cca3].forEach(add);
   return [...s];
 }
 function sleep(ms){return new Promise(r=>setTimeout(r,ms));}
