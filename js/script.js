@@ -83,11 +83,42 @@ function goTo(id) {
 }
 
 // ── THEME TOGGLE ──
+function getMapColors() {
+  const isLight =
+    document.documentElement.getAttribute("data-theme") === "light";
+  return {
+    land: isLight ? "#c8d8b0" : "#1e1e2e",
+    border: isLight ? "#8aaa6a" : "#3a3a55",
+    found: isLight ? "#2d7a4a" : "#1a3a2a",
+    foundBorder: isLight ? "#1a5a32" : "#5ecf8a",
+  };
+}
 function applyTheme(theme) {
   document.documentElement.setAttribute("data-theme", theme);
   const btn = document.getElementById("themeToggle");
   if (btn) btn.textContent = theme === "light" ? "☀️" : "🌙";
   localStorage.setItem("gq-theme", theme);
+  // Re-styler la carte si elle est initialisée
+  if (Object.keys(geoLayers).length > 0) {
+    const c = getMapColors();
+    Object.entries(geoLayers).forEach(([id, layer]) => {
+      if (foundSet.has(id)) {
+        layer.setStyle({
+          fillColor: c.found,
+          fillOpacity: 0.92,
+          color: c.foundBorder,
+          weight: 1.2,
+        });
+      } else {
+        layer.setStyle({
+          fillColor: c.land,
+          fillOpacity: 0.9,
+          color: c.border,
+          weight: 0.8,
+        });
+      }
+    });
+  }
 }
 function toggleTheme() {
   const current = document.documentElement.getAttribute("data-theme") || "dark";
@@ -1157,12 +1188,15 @@ function initMap() {
 
   // Charger le GeoJSON et stocker les layers
   L.geoJSON(geoData, {
-    style: () => ({
-      fillColor: "#1e1e2e",
-      fillOpacity: 0.9,
-      color: "#3a3a55",
-      weight: 0.8,
-    }),
+    style: () => {
+      const c = getMapColors();
+      return {
+        fillColor: c.land,
+        fillOpacity: 0.9,
+        color: c.border,
+        weight: 0.8,
+      };
+    },
     onEachFeature: (feat, layer) => {
       const geoId = feat.id; // ex: "CAN", "MEX", "FRA"
       geoLayers[geoId] = layer;
@@ -1236,10 +1270,11 @@ function mapSubmit() {
 
   const layer = findGeoLayer(match.cca3);
   if (layer) {
+    const c = getMapColors();
     layer.setStyle({
-      fillColor: "#1a3a2a",
+      fillColor: c.found,
       fillOpacity: 0.92,
-      color: "#5ecf8a",
+      color: c.foundBorder,
       weight: 1.2,
     });
     placeFlagMarker(match, layer);
@@ -1350,14 +1385,15 @@ function updateMapStats() {
 function resetMap() {
   if (!confirm("Réinitialiser la carte ?")) return;
   foundSet.clear();
-  Object.values(geoLayers).forEach((l) =>
+  Object.values(geoLayers).forEach((l) => {
+    const c = getMapColors();
     l.setStyle({
-      fillColor: "#1e1e2e",
+      fillColor: c.land,
       fillOpacity: 0.9,
-      color: "#3a3a55",
+      color: c.border,
       weight: 0.8,
-    }),
-  );
+    });
+  });
   document
     .querySelectorAll(".ctag.found")
     .forEach((t) => t.classList.remove("found"));
