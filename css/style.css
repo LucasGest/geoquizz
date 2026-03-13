@@ -85,6 +85,11 @@ nav {
   background-clip: text;
   white-space: nowrap;
 }
+
+.nav-logo a{
+  text-decoration: none;
+}
+
 .nav-tabs {
   display: flex;
   gap: 0.25rem;
