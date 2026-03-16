@@ -13,6 +13,8 @@
   --nav-bg: rgba(8, 8, 16, 0.95);
   --grid-color: rgba(245, 200, 66, 0.025);
 }
+
+
 [data-theme="light"] {
   --bg: #f4f4f0;
   --surface: #eaeae4;
