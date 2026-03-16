@@ -1,568 +1,1964 @@
-<!doctype html>
-<html lang="fr">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>GéoQuiz</title>
-    <link rel="stylesheet" href="css/style.css" />
-    <link
-      rel="stylesheet"
-      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&display=swap"
-      rel="stylesheet" />
-    <!-- Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
-  </head>
-  <body>
-    <!-- NAV -->
-    <nav>
-      <div class="nav-logo"><a href="index.html">GéoQuiz</a></div>
-      <div class="nav-tabs">
-        <button class="nav-tab active" onclick="goTo('menu')">
-          🏠 Accueil
-        </button>
-        <button class="nav-tab" onclick="goTo('quiz')">🎯 Quiz</button>
-        <button class="nav-tab" onclick="goTo('map')">🌍 Carte</button>
-        <button class="nav-tab" onclick="goTo('board')">🏆 Classement</button>
-      </div>
-      <button
-        class="theme-toggle"
-        id="themeToggle"
-        onclick="toggleTheme()"
-        title="Changer le thème">
-        🌙
-      </button>
-    </nav>
+<!DOCTYPE html>
+<html lang="fr" prefix="og: https://ogp.me/ns#">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <div id="toast"></div>
+<!-- SEO PRIMAIRE -->
+<title>GéoQuiz — Quiz de Géographie Interactif | Pays, Drapeaux, Capitales</title>
+<meta name="description" content="Testez vos connaissances en géographie ! Quiz interactif sur les pays du monde, drapeaux et capitales. Carte mondiale à compléter, classement en temps réel. Gratuit, sans inscription.">
+<meta name="keywords" content="quiz géographie, quiz pays du monde, quiz drapeaux, quiz capitales, carte interactive, géographie scolaire, apprendre géographie, jeu géographie, quiz monde, drapeaux monde, capitales monde">
+<meta name="author" content="GéoQuiz">
+<meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
+<meta name="language" content="fr">
+<link rel="canonical" href="https://geoquizz.vercel.app/">
 
-    <!-- ════ LOADER ════ -->
-    <div class="screen active" id="s-loader" style="display: flex">
-      <div class="ld-logo">GéoQuiz</div>
-      <div class="ld-bar-w">
-        <div class="ld-bar" id="lbar" style="width: 5%"></div>
-      </div>
-      <div class="ld-txt" id="ltxt">Chargement des pays…</div>
+<!-- OPEN GRAPH -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="GéoQuiz">
+<meta property="og:title" content="GéoQuiz — Quiz de Géographie Interactif">
+<meta property="og:description" content="Testez vos connaissances en géographie ! Quiz sur les pays, drapeaux et capitales du monde. Carte interactive, classement en temps réel. Gratuit !">
+<meta property="og:url" content="https://geoquizz.vercel.app/">
+<meta property="og:image" content="https://geoquizz.vercel.app/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="GéoQuiz - Quiz de géographie interactif">
+<meta property="og:locale" content="fr_FR">
+
+<!-- TWITTER CARD -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="GéoQuiz — Quiz de Géographie Interactif">
+<meta name="twitter:description" content="Testez vos connaissances en géographie ! Quiz pays, drapeaux, capitales. Carte interactive et classement en temps réel.">
+<meta name="twitter:image" content="https://geoquizz.vercel.app/og-image.png">
+<meta name="twitter:image:alt" content="GéoQuiz - Quiz de géographie interactif">
+
+<!-- SCHEMA.ORG JSON-LD -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "GéoQuiz",
+  "url": "https://geoquizz.vercel.app/",
+  "description": "Quiz de géographie interactif sur les pays du monde, drapeaux et capitales. Carte mondiale avec classement en temps réel.",
+  "applicationCategory": "EducationalApplication",
+  "operatingSystem": "Web",
+  "inLanguage": "fr",
+  "isAccessibleForFree": true,
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "EUR" },
+  "audience": { "@type": "EducationalAudience", "educationalRole": "student" },
+  "featureList": ["Quiz drapeaux du monde", "Quiz capitales", "Carte interactive mondiale", "Classement en temps réel", "246 pays disponibles"]
+}
+</script>
+
+<!-- PERFORMANCE -->
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="theme-color" content="#f5c842">
+<meta name="color-scheme" content="dark light">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://restcountries.com">
+<link rel="dns-prefetch" href="https://flagcdn.com">
+<link rel="dns-prefetch" href="https://raw.githubusercontent.com">
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+<style>
+:root{
+  --bg:#080810;--surface:#111118;--card:#181820;--border:#252532;
+  --accent:#f5c842;--accent2:#e8533a;--text:#f0f0f5;--muted:#5a5a70;
+  --success:#4caf78;--error:#e8533a;--r:12px;
+  --nav-bg:rgba(8,8,16,.95);
+  --grid-color:rgba(245,200,66,.025);
+}
+[data-theme="light"]{
+  --bg:#f4f4f0;--surface:#eaeae4;--card:#ffffff;--border:#d8d8cc;
+  --text:#1a1a2e;--muted:#8888a0;
+  --success:#2e8a52;--error:#c0392b;
+  --nav-bg:rgba(244,244,240,.95);
+  --grid-color:rgba(180,140,0,.04);
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{height:100%;}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;overflow-x:hidden;transition:background .3s,color .3s;}
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(var(--grid-color) 1px,transparent 1px),linear-gradient(90deg,var(--grid-color) 1px,transparent 1px);background-size:52px 52px;pointer-events:none;z-index:0;}
+
+/* ── NAV ── */
+nav{position:fixed;top:0;left:0;right:0;height:52px;background:var(--nav-bg);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 1.2rem;z-index:500;gap:.8rem;transition:background .3s,border-color .3s;}
+.nav-logo{font-family:'Bebas Neue',sans-serif;font-size:1.55rem;letter-spacing:.06em;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;white-space:nowrap;}
+.nav-tabs{display:flex;gap:.25rem;flex-wrap:wrap;}
+.nav-tab{background:none;border:none;color:var(--muted);font-family:'DM Sans',sans-serif;font-size:.78rem;padding:.35rem .8rem;border-radius:7px;cursor:pointer;transition:all .18s;white-space:nowrap;}
+.nav-tab:hover{color:var(--text);}
+.nav-tab.active{background:rgba(245,200,66,.1);color:var(--accent);}
+
+/* ── THEME TOGGLE ── */
+.theme-toggle{background:none;border:1.5px solid var(--border);color:var(--muted);width:34px;height:34px;border-radius:8px;cursor:pointer;font-size:1rem;display:flex;align-items:center;justify-content:center;transition:all .2s;flex-shrink:0;}
+.theme-toggle:hover{border-color:var(--accent);color:var(--accent);}
+
+/* ── SCREENS ── */
+.screen{position:relative;z-index:1;padding-top:52px;min-height:100vh;display:none;}
+.screen.active{display:block;animation:fadeIn .3s ease;}
+#s-map.active{display:flex;flex-direction:column;height:100vh;padding-top:52px;}
+#s-results.active{display:flex;align-items:center;justify-content:center;}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes slideUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+
+/* ══ LOADER ══ */
+#s-loader{align-items:center;justify-content:center;flex-direction:column;gap:1.4rem;}
+#s-loader.active{display:flex!important;}
+.ld-logo{font-family:'Bebas Neue',sans-serif;font-size:4.5rem;letter-spacing:.04em;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.ld-bar-w{width:220px;height:3px;background:var(--border);border-radius:99px;overflow:hidden;}
+.ld-bar{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:99px;transition:width .3s ease;}
+.ld-txt{font-size:.78rem;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;}
+
+/* ══ MENU ══ */
+#s-menu{padding-top:68px;}
+.menu-wrap{display:flex;flex-direction:column;align-items:center;padding:1.5rem 1.2rem 3rem;}
+.menu-hero{font-family:'Bebas Neue',sans-serif;font-size:clamp(3.5rem,9vw,6.5rem);line-height:1;text-align:center;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.menu-sub{color:var(--muted);font-size:.82rem;letter-spacing:.14em;text-transform:uppercase;margin-bottom:.7rem;}
+.pill-info{background:rgba(245,200,66,.08);border:1px solid rgba(245,200,66,.18);color:var(--accent);font-size:.74rem;letter-spacing:.1em;text-transform:uppercase;padding:.26rem .82rem;border-radius:99px;margin-bottom:2.2rem;}
+.modes-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(175px,1fr));gap:.75rem;width:100%;max-width:880px;margin-bottom:1.8rem;}
+.mode-card{background:var(--card);border:1.5px solid var(--border);border-radius:var(--r);padding:1.4rem 1.2rem;cursor:pointer;transition:all .22s;display:flex;flex-direction:column;align-items:flex-start;gap:.45rem;position:relative;overflow:hidden;}
+.mode-card::after{content:'';position:absolute;inset:0;background:linear-gradient(135deg,transparent 50%,rgba(245,200,66,.05));opacity:0;transition:opacity .3s;}
+.mode-card:hover{border-color:var(--accent);transform:translateY(-2px);}
+.mode-card:hover::after{opacity:1;}
+.mode-card.selected{border-color:var(--accent);background:rgba(245,200,66,.06);}
+.mc-icon{font-size:1.6rem;}
+.mc-name{font-family:'Bebas Neue',sans-serif;font-size:1.2rem;letter-spacing:.05em;color:var(--accent);}
+.mc-desc{font-size:.74rem;color:var(--muted);line-height:1.55;}
+.opts-row{display:flex;gap:1.8rem;flex-wrap:wrap;justify-content:center;margin-bottom:1.8rem;}
+.opt-g{display:flex;flex-direction:column;gap:.4rem;align-items:center;}
+.opt-lbl{font-size:.64rem;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;}
+.pill-row{display:flex;gap:.4rem;flex-wrap:wrap;justify-content:center;}
+.pill{padding:.34rem .85rem;border-radius:99px;border:1.5px solid var(--border);background:var(--card);color:var(--muted);font-family:'DM Sans',sans-serif;font-size:.76rem;cursor:pointer;transition:all .18s;}
+.pill:hover,.pill.active{border-color:var(--accent);color:var(--accent);background:rgba(245,200,66,.07);}
+.start-btn{background:var(--accent);color:#080810;border:none;font-family:'Bebas Neue',sans-serif;font-size:1.25rem;letter-spacing:.1em;padding:.9rem 3rem;border-radius:var(--r);cursor:pointer;transition:all .2s;}
+.start-btn:hover{transform:scale(1.04);background:#ffd44f;}
+
+/* ══ QUIZ ══ */
+#s-quiz{padding-top:68px;}
+.quiz-wrap{display:flex;flex-direction:column;align-items:center;padding:1rem 1.2rem;}
+.topbar{width:100%;max-width:700px;display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;}
+.back-btn{background:none;border:1px solid var(--border);color:var(--muted);font-family:'DM Sans',sans-serif;font-size:.78rem;padding:.35rem .75rem;border-radius:7px;cursor:pointer;transition:all .18s;}
+.back-btn:hover{color:var(--text);border-color:var(--text);}
+.qstats{display:flex;gap:1.2rem;}
+.qstat{display:flex;flex-direction:column;align-items:center;font-size:.62rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);}
+.qstat strong{font-family:'Bebas Neue',sans-serif;font-size:1.45rem;letter-spacing:.04em;color:var(--text);}
+.qstat.good strong{color:var(--success);}
+.qstat.bad strong{color:var(--error);}
+.prog-w{width:100%;max-width:700px;height:3px;background:var(--border);border-radius:99px;margin-bottom:1.5rem;overflow:hidden;}
+.prog-b{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:99px;transition:width .4s ease;}
+.qcard{background:var(--card);border:1px solid var(--border);border-radius:18px;padding:2rem 1.8rem;width:100%;max-width:700px;display:flex;flex-direction:column;align-items:center;gap:1.2rem;animation:slideUp .3s ease;}
+.q-lbl{font-size:.64rem;text-transform:uppercase;letter-spacing:.14em;color:var(--accent);background:rgba(245,200,66,.1);padding:.25rem .7rem;border-radius:99px;}
+.flag-wrap{width:min(300px,82vw);border-radius:9px;overflow:hidden;box-shadow:0 12px 48px rgba(0,0,0,.6);animation:flagIn .4s cubic-bezier(.34,1.56,.64,1);}
+.flag-wrap img{width:100%;height:auto;display:none;}
+.skel{width:100%;height:170px;background:var(--border);animation:shimmer 1.2s infinite;}
+@keyframes shimmer{0%,100%{opacity:.5}50%{opacity:1}}
+@keyframes flagIn{from{transform:scale(.75) rotate(-6deg);opacity:0}to{transform:scale(1) rotate(0);opacity:1}}
+.q-txt{font-size:1.05rem;font-weight:500;text-align:center;line-height:1.55;}
+.q-sub{font-size:.8rem;color:var(--muted);text-align:center;}
+.ans-grid{display:grid;grid-template-columns:1fr 1fr;gap:.65rem;width:100%;}
+.ans-btn{background:var(--surface);border:1.5px solid var(--border);color:var(--text);padding:.85rem 1rem;border-radius:9px;font-family:'DM Sans',sans-serif;font-size:.88rem;font-weight:500;cursor:pointer;transition:all .18s;text-align:center;display:flex;align-items:center;justify-content:center;gap:.5rem;position:relative;overflow:hidden;}
+.ans-btn:hover:not(:disabled){border-color:var(--accent);color:var(--accent);background:rgba(245,200,66,.05);}
+.ans-btn.correct{border-color:var(--success)!important;background:rgba(76,175,120,.12)!important;color:var(--success)!important;}
+.ans-btn.wrong{border-color:var(--error)!important;background:rgba(232,83,58,.12)!important;color:var(--error)!important;}
+.ans-btn:disabled{cursor:default;}
+.flag-opt{width:68px;height:auto;border-radius:4px;display:block;}
+.inp-w{width:100%;display:flex;gap:.6rem;}
+.txt-in{flex:1;background:var(--surface);border:1.5px solid var(--border);color:var(--text);font-family:'DM Sans',sans-serif;font-size:.95rem;padding:.75rem .9rem;border-radius:9px;outline:none;transition:border-color .2s;}
+.txt-in:focus{border-color:var(--accent);}
+.txt-in.correct{border-color:var(--success);}
+.txt-in.wrong{border-color:var(--error);}
+.sub-btn{background:var(--accent);color:#080810;border:none;font-family:'Bebas Neue',sans-serif;font-size:1rem;letter-spacing:.08em;padding:.75rem 1.2rem;border-radius:9px;cursor:pointer;transition:all .18s;}
+.sub-btn:hover{background:#ffd44f;}
+.feedback{display:none;font-size:.84rem;text-align:center;padding:.5rem 1rem;border-radius:7px;animation:fadeIn .2s ease;}
+.feedback.correct{display:block;background:rgba(76,175,120,.13);color:var(--success);}
+.feedback.wrong{display:block;background:rgba(232,83,58,.11);color:var(--error);}
+.next-btn{display:none;background:none;border:1.5px solid var(--accent);color:var(--accent);font-family:'Bebas Neue',sans-serif;font-size:.95rem;letter-spacing:.08em;padding:.6rem 1.8rem;border-radius:9px;cursor:pointer;transition:all .2s;}
+.next-btn.show{display:block;}
+.next-btn:hover{background:var(--accent);color:#080810;}
+
+/* ══ RESULTS ══ */
+#s-results.active{display:flex!important;align-items:center;justify-content:center;}
+.res-wrap{display:flex;flex-direction:column;align-items:center;padding:2rem;animation:fadeIn .5s ease;}
+.arc-w{position:relative;width:160px;height:160px;margin-bottom:1.4rem;}
+.arc-svg{transform:rotate(-90deg);}
+.arc-bg{fill:none;stroke:var(--border);stroke-width:10;}
+.arc-fg{fill:none;stroke:url(#arcG);stroke-width:10;stroke-linecap:round;transition:stroke-dashoffset 1.1s ease;}
+.arc-in{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+.arc-pct{font-family:'Bebas Neue',sans-serif;font-size:2.6rem;color:var(--accent);line-height:1;}
+.arc-lbl{font-size:.65rem;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;}
+.res-title{font-family:'Bebas Neue',sans-serif;font-size:2.6rem;letter-spacing:.04em;margin-bottom:.35rem;text-align:center;}
+.res-sub{color:var(--muted);margin-bottom:.4rem;text-align:center;font-size:.9rem;}
+.res-det{font-size:.78rem;color:var(--muted);margin-bottom:1.5rem;text-align:center;}
+/* Save form inside results */
+.save-score-box{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1.2rem 1.5rem;width:100%;max-width:400px;margin-bottom:1.5rem;display:flex;flex-direction:column;gap:.8rem;}
+.save-title{font-size:.72rem;color:var(--accent);text-transform:uppercase;letter-spacing:.1em;}
+.save-row{display:flex;gap:.6rem;}
+.save-inp,.save-sel{flex:1;background:var(--surface);border:1.5px solid var(--border);color:var(--text);font-family:'DM Sans',sans-serif;font-size:.88rem;padding:.6rem .8rem;border-radius:8px;outline:none;transition:border-color .2s;-webkit-appearance:none;appearance:none;}
+.save-inp:focus,.save-sel:focus{border-color:var(--accent);}
+.save-btn{background:var(--accent);color:#080810;border:none;font-family:'Bebas Neue',sans-serif;font-size:1rem;letter-spacing:.08em;padding:.6rem 1.2rem;border-radius:8px;cursor:pointer;transition:all .18s;white-space:nowrap;}
+.save-btn:hover{background:#ffd44f;}
+.save-new-inp{background:var(--surface);border:1.5px solid var(--border);color:var(--text);font-family:'DM Sans',sans-serif;font-size:.85rem;padding:.55rem .8rem;border-radius:8px;outline:none;width:100%;transition:border-color .2s;}
+.save-new-inp:focus{border-color:var(--accent);}
+.res-btns{display:flex;gap:.8rem;flex-wrap:wrap;justify-content:center;}
+.btn-ghost{background:none;border:1.5px solid var(--border);color:var(--text);font-family:'DM Sans',sans-serif;font-size:.84rem;padding:.6rem 1.4rem;border-radius:9px;cursor:pointer;transition:all .2s;}
+.btn-ghost:hover{border-color:var(--text);}
+
+/* ══ MAP ══ */
+#s-map{padding-top:52px;}
+#s-map.active{display:flex!important;flex-direction:column;height:100vh;}
+.map-layout{display:flex;flex:1;overflow:hidden;}
+#map-container{flex:1;position:relative;min-width:0;}
+#leaflet-map{width:100%;height:100%;}
+.map-panel{width:300px;flex-shrink:0;background:var(--surface);border-left:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden;}
+.map-header{padding:1rem 1rem .7rem;border-bottom:1px solid var(--border);flex-shrink:0;}
+.map-title{font-family:'Bebas Neue',sans-serif;font-size:1.35rem;letter-spacing:.05em;color:var(--accent);margin-bottom:.5rem;}
+.map-score-row{display:flex;gap:.8rem;margin-bottom:.7rem;}
+.map-stat{display:flex;flex-direction:column;align-items:center;font-size:.6rem;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);}
+.map-stat strong{font-family:'Bebas Neue',sans-serif;font-size:1.3rem;color:var(--text);}
+.map-inp-w{display:flex;gap:.45rem;}
+.map-inp{flex:1;background:var(--card);border:1.5px solid var(--border);color:var(--text);font-family:'DM Sans',sans-serif;font-size:.85rem;padding:.6rem .8rem;border-radius:8px;outline:none;transition:border-color .2s;}
+.map-inp:focus{border-color:var(--accent);}
+.map-inp.flash-ok{animation:flashOk .5s ease;}
+.map-inp.flash-err{animation:flashErr .4s ease;}
+@keyframes flashOk{0%{border-color:var(--success);background:rgba(76,175,120,.15)}100%{border-color:var(--border);background:var(--card)}}
+@keyframes flashErr{0%,50%{border-color:var(--error);background:rgba(232,83,58,.12)}100%{border-color:var(--border);background:var(--card)}}
+.map-sub-btn{background:var(--accent);color:#080810;border:none;font-family:'Bebas Neue',sans-serif;font-size:.9rem;letter-spacing:.06em;padding:.6rem .9rem;border-radius:8px;cursor:pointer;transition:all .18s;}
+.map-sub-btn:hover{background:#ffd44f;}
+.map-fb{min-height:20px;font-size:.74rem;margin-top:.4rem;padding:.22rem .5rem;border-radius:5px;transition:all .3s;}
+.map-fb.ok{background:rgba(76,175,120,.12);color:var(--success);}
+.map-fb.err{background:rgba(232,83,58,.1);color:var(--error);}
+.map-fb.hint{background:rgba(245,200,66,.08);color:var(--accent);}
+.region-tabs{display:flex;gap:.3rem;padding:.55rem .8rem;border-bottom:1px solid var(--border);flex-wrap:wrap;flex-shrink:0;}
+.rtab{background:none;border:1px solid var(--border);color:var(--muted);font-size:.68rem;padding:.25rem .55rem;border-radius:5px;cursor:pointer;transition:all .18s;font-family:'DM Sans',sans-serif;}
+.rtab:hover{color:var(--text);}
+.rtab.active{background:rgba(245,200,66,.1);border-color:var(--accent);color:var(--accent);}
+.countries-list{flex:1;overflow-y:auto;padding:.6rem .8rem;}
+.countries-list::-webkit-scrollbar{width:3px;}
+.countries-list::-webkit-scrollbar-thumb{background:var(--border);border-radius:99px;}
+.region-section{margin-bottom:1rem;}
+.region-h{font-family:'Bebas Neue',sans-serif;font-size:.9rem;letter-spacing:.06em;color:var(--accent);margin-bottom:.4rem;padding-bottom:.25rem;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;}
+.rcount{font-family:'DM Sans',sans-serif;font-size:.66rem;color:var(--muted);}
+.ctag{display:inline-flex;align-items:center;gap:.25rem;background:var(--card);border:1px solid var(--border);border-radius:5px;padding:.2rem .45rem;font-size:.68rem;margin:.18rem;transition:all .2s;}
+.ctag.found{background:rgba(76,175,120,.1);border-color:var(--success);color:var(--success);}
+.map-reset{display:block;width:calc(100% - 1.6rem);margin:.6rem .8rem;background:none;border:1px solid var(--border);color:var(--muted);font-family:'DM Sans',sans-serif;font-size:.76rem;padding:.45rem;border-radius:7px;cursor:pointer;transition:all .18s;flex-shrink:0;}
+.map-reset:hover{border-color:var(--error);color:var(--error);}
+
+/* ══ CLASSEMENT ══ */
+#s-board{padding-top:68px;}
+.board-wrap{max-width:1050px;margin:0 auto;padding:1.2rem 1.2rem 3rem;}
+.board-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:1.2rem;flex-wrap:wrap;gap:.8rem;}
+.board-title{font-family:'Bebas Neue',sans-serif;font-size:1.8rem;letter-spacing:.05em;color:var(--accent);}
+.board-actions{display:flex;gap:.5rem;flex-wrap:wrap;}
+.btn-sm{background:var(--card);border:1.5px solid var(--border);color:var(--text);font-family:'DM Sans',sans-serif;font-size:.76rem;padding:.38rem .85rem;border-radius:7px;cursor:pointer;transition:all .18s;}
+.btn-sm:hover{border-color:var(--text);}
+.btn-sm.danger:hover{border-color:var(--error);color:var(--error);}
+/* Stats */
+.bstats{display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:.7rem;margin-bottom:1.2rem;}
+.bstat{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:.9rem;display:flex;flex-direction:column;align-items:center;gap:.25rem;}
+.bstat-icon{font-size:1.3rem;}
+.bstat-val{font-family:'Bebas Neue',sans-serif;font-size:1.7rem;letter-spacing:.04em;color:var(--accent);}
+.bstat-lbl{font-size:.62rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;}
+/* Filters */
+.bfilters{display:flex;gap:1.2rem;flex-wrap:wrap;align-items:flex-start;margin-bottom:1.2rem;}
+.bfg{display:flex;flex-direction:column;gap:.35rem;}
+.bflbl{font-size:.62rem;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;}
+/* Podium */
+.podium{display:flex;gap:1rem;justify-content:center;align-items:flex-end;padding:1.1rem 1rem;background:var(--card);border:1px solid var(--border);border-radius:14px;margin-bottom:1.2rem;}
+.pod-item{display:flex;flex-direction:column;align-items:center;gap:.4rem;}
+.pod-medal{font-size:1.4rem;}
+.pod-name{font-weight:600;font-size:.84rem;text-align:center;max-width:85px;word-break:break-word;}
+.pod-pct{font-family:'Bebas Neue',sans-serif;font-size:1.2rem;letter-spacing:.04em;}
+.pod-classe{font-size:.65rem;color:var(--muted);background:var(--surface);padding:2px 7px;border-radius:99px;}
+.pod-bar{width:68px;border-radius:7px 7px 0 0;}
+/* Table */
+.btable{background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden;overflow-x:auto;}
+.bthead{display:flex;align-items:center;padding:.55rem .9rem;background:var(--surface);border-bottom:1px solid var(--border);font-size:.61rem;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);white-space:nowrap;gap:.4rem;}
+.btr{display:flex;align-items:center;padding:.65rem .9rem;border-bottom:1px solid var(--border);font-size:.84rem;gap:.4rem;transition:background .15s;white-space:nowrap;}
+.btr:last-child{border-bottom:none;}
+.btr:hover{background:rgba(255,255,255,.02);}
+.tc-rank{width:34px;text-align:center;flex-shrink:0;}
+.tc-name{flex:1;min-width:90px;}
+.tc-classe{width:85px;flex-shrink:0;}
+.tc-mode{width:120px;flex-shrink:0;}
+.tc-score{width:58px;text-align:center;flex-shrink:0;}
+.tc-pct{width:60px;text-align:center;flex-shrink:0;}
+.tc-date{width:105px;flex-shrink:0;}
+.tc-del{width:30px;flex-shrink:0;}
+.cbadge{background:rgba(245,200,66,.07);border:1px solid rgba(245,200,66,.18);color:var(--accent);font-size:.64rem;padding:1px 7px;border-radius:99px;}
+.pct-n{font-family:'Bebas Neue',sans-serif;font-size:1.05rem;letter-spacing:.04em;}
+.del-btn{background:none;border:none;color:var(--muted);cursor:pointer;font-size:.8rem;padding:.15rem .25rem;border-radius:3px;transition:color .18s;}
+.del-btn:hover{color:var(--error);}
+.del-confirm{display:flex;gap:3px;}
+.dy{background:rgba(76,175,120,.12);border:1px solid var(--success);color:var(--success);font-size:.68rem;padding:2px 5px;border-radius:3px;cursor:pointer;}
+.dn{background:rgba(232,83,58,.1);border:1px solid var(--error);color:var(--error);font-size:.68rem;padding:2px 5px;border-radius:3px;cursor:pointer;}
+.empty-board{text-align:center;padding:2.5rem;color:var(--muted);line-height:2.5;font-size:.88rem;}
+/* Add score inline panel */
+.add-panel{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1.3rem;margin-bottom:1.2rem;display:none;animation:slideUp .25s ease;}
+.add-panel.open{display:block;}
+.add-panel-title{font-family:'Bebas Neue',sans-serif;font-size:1.2rem;letter-spacing:.04em;color:var(--accent);margin-bottom:.9rem;}
+.add-form{display:flex;flex-wrap:wrap;gap:.7rem;align-items:flex-end;}
+.add-field{display:flex;flex-direction:column;gap:.3rem;}
+.add-lbl{font-size:.61rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;}
+.add-inp,.add-sel{background:var(--surface);border:1.5px solid var(--border);color:var(--text);font-family:'DM Sans',sans-serif;font-size:.84rem;padding:.58rem .75rem;border-radius:8px;outline:none;transition:border-color .2s;-webkit-appearance:none;appearance:none;}
+.add-inp:focus,.add-sel:focus{border-color:var(--accent);}
+.add-ok-btn{background:var(--accent);color:#080810;border:none;font-family:'Bebas Neue',sans-serif;font-size:.95rem;letter-spacing:.08em;padding:.58rem 1.2rem;border-radius:8px;cursor:pointer;transition:all .18s;white-space:nowrap;align-self:flex-end;}
+.add-ok-btn:hover{background:#ffd44f;}
+
+/* Flag markers sur la carte */
+.flag-marker{
+  background:none!important;
+  border:none!important;
+}
+.flag-marker-inner{
+  width:32px;height:22px;
+  border-radius:3px;
+  overflow:hidden;
+  box-shadow:0 2px 8px rgba(0,0,0,.7),0 0 0 1.5px rgba(255,255,255,.25);
+  animation:flagPop .4s cubic-bezier(.34,1.56,.64,1);
+  transform-origin:center bottom;
+}
+.flag-marker-inner img{
+  width:100%;height:100%;
+  object-fit:cover;display:block;
+}
+@keyframes flagPop{
+  from{transform:scale(0) translateY(6px);opacity:0}
+  to{transform:scale(1) translateY(0);opacity:1}
+}
+.ctag.hidden-country{opacity:.4;cursor:default;min-width:24px;justify-content:center;}
+/* Admin modal */
+#adminOverlay.open{display:flex!important;}
+.classe-row{display:flex;align-items:center;justify-content:space-between;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:.5rem .8rem;font-size:.85rem;}
+.classe-row .del-classe{background:none;border:none;color:var(--muted);cursor:pointer;font-size:.8rem;padding:.1rem .3rem;border-radius:3px;transition:color .15s;}
+.classe-row .del-classe:hover{color:var(--error);}
+
+.ripple{position:absolute;border-radius:50%;transform:scale(0);animation:rpl .5s linear;background:rgba(255,255,255,.1);pointer-events:none;}
+@keyframes rpl{to{transform:scale(5);opacity:0;}}
+
+/* Toast */
+#toast{position:fixed;bottom:1.3rem;left:50%;transform:translateX(-50%);padding:.55rem 1.2rem;border-radius:9px;font-size:.82rem;z-index:999;display:none;animation:fadeIn .2s ease;white-space:nowrap;border:1px solid;backdrop-filter:blur(8px);}
+#toast.ok{background:rgba(76,175,120,.15);border-color:var(--success);color:var(--success);}
+#toast.err{background:rgba(232,83,58,.12);border-color:var(--error);color:var(--error);}
+
+/* Leaflet overrides */
+.leaflet-container{background:#0c0c18!important;}
+[data-theme="light"] .leaflet-container{background:#d4e4f0!important;}
+.leaflet-control-attribution{display:none!important;}
+.leaflet-control-zoom a{background:var(--card)!important;color:var(--text)!important;border-color:var(--border)!important;}
+.leaflet-tooltip-dark{background:var(--card);border:1px solid var(--border);color:var(--text);font-family:'DM Sans',sans-serif;font-size:.74rem;padding:.28rem .55rem;border-radius:5px;box-shadow:0 4px 16px rgba(0,0,0,.5);}
+
+@media(max-width:640px){
+  .ans-grid{grid-template-columns:1fr;}
+  .map-panel{width:100%;max-height:42vh;border-left:none;border-top:1px solid var(--border);}
+  .map-layout{flex-direction:column-reverse;}
+  #leaflet-map{height:calc(58vh - 52px);}
+  .tc-mode,.tc-date{display:none;}
+  .bfilters{gap:.7rem;}
+  .add-form{flex-direction:column;}
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">GéoQuiz</div>
+  <div class="nav-tabs">
+    <button class="nav-tab active"  onclick="goTo('menu')">🏠 Accueil</button>
+    <button class="nav-tab"         onclick="goTo('quiz')">🎯 Quiz</button>
+    <button class="nav-tab"         onclick="goTo('map')">🌍 Carte</button>
+    <button class="nav-tab"         onclick="goTo('board')">🏆 Classement</button>
+  </div>
+  <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" title="Changer le thème">🌙</button>
+</nav>
+
+<div id="toast"></div>
+
+<!-- ════ LOADER ════ -->
+<div class="screen active" id="s-loader" style="display:flex">
+  <div class="ld-logo">GéoQuiz</div>
+  <div class="ld-bar-w"><div class="ld-bar" id="lbar" style="width:5%"></div></div>
+  <div class="ld-txt" id="ltxt">Chargement des pays…</div>
+</div>
+
+<!-- ════ MENU ════ -->
+<div class="screen" id="s-menu">
+  <div class="menu-wrap">
+    <div class="menu-hero">GéoQuiz</div>
+    <div class="menu-sub">Drapeaux · Capitales · Pays</div>
+    <div class="pill-info" id="pillInfo">Chargement…</div>
+
+    <div class="modes-grid">
+      <div class="mode-card selected" data-mode="flag2country"><div class="mc-icon">🏳️</div><div class="mc-name">Quel pays ?</div><div class="mc-desc">Un drapeau → trouvez le nom parmi 4 choix.</div></div>
+      <div class="mode-card" data-mode="country2flag"><div class="mc-icon">🔍</div><div class="mc-name">Quel drapeau ?</div><div class="mc-desc">Un nom de pays → trouvez le bon drapeau.</div></div>
+      <div class="mode-card" data-mode="flag2capital"><div class="mc-icon">🏛️</div><div class="mc-name">Drapeau → Capitale</div><div class="mc-desc">Un drapeau → trouvez la capitale parmi 4 choix.</div></div>
+      <div class="mode-card" data-mode="write-country"><div class="mc-icon">✍️</div><div class="mc-name">Écrire le pays</div><div class="mc-desc">Un drapeau → tapez le nom (approximatif accepté !).</div></div>
+      <div class="mode-card" data-mode="write-capital"><div class="mc-icon">🗺️</div><div class="mc-name">Écrire la capitale</div><div class="mc-desc">Un pays → tapez sa capitale (approximatif accepté !).</div></div>
     </div>
 
-    <!-- ════ MENU ════ -->
-    <div class="screen" id="s-menu">
-      <div class="menu-wrap">
-        <div class="menu-hero">GéoQuiz</div>
-        <div class="menu-sub">Drapeaux · Capitales · Pays</div>
-        <div class="pill-info" id="pillInfo">Chargement…</div>
-
-        <div class="modes-grid">
-          <div class="mode-card selected" data-mode="flag2country">
-            <div class="mc-icon">🏳️</div>
-            <div class="mc-name">Quel pays ?</div>
-            <div class="mc-desc">
-              Un drapeau → trouvez le nom parmi 4 choix.
-            </div>
-          </div>
-          <div class="mode-card" data-mode="country2flag">
-            <div class="mc-icon">🔍</div>
-            <div class="mc-name">Quel drapeau ?</div>
-            <div class="mc-desc">Un nom de pays → trouvez le bon drapeau.</div>
-          </div>
-          <div class="mode-card" data-mode="flag2capital">
-            <div class="mc-icon">🏛️</div>
-            <div class="mc-name">Drapeau → Capitale</div>
-            <div class="mc-desc">
-              Un drapeau → trouvez la capitale parmi 4 choix.
-            </div>
-          </div>
-          <div class="mode-card" data-mode="write-country">
-            <div class="mc-icon">✍️</div>
-            <div class="mc-name">Écrire le pays</div>
-            <div class="mc-desc">
-              Un drapeau → tapez le nom (approximatif accepté !).
-            </div>
-          </div>
-          <div class="mode-card" data-mode="write-capital">
-            <div class="mc-icon">🗺️</div>
-            <div class="mc-name">Écrire la capitale</div>
-            <div class="mc-desc">
-              Un pays → tapez sa capitale (approximatif accepté !).
-            </div>
-          </div>
-        </div>
-
-        <div class="opts-row">
-          <div class="opt-g">
-            <div class="opt-lbl">Région</div>
-            <div class="pill-row" id="regionPills">
-              <button class="pill active" data-region="all">Monde</button>
-              <button class="pill" data-region="Europe">Europe</button>
-              <button class="pill" data-region="Americas">Amériques</button>
-              <button class="pill" data-region="Asia">Asie</button>
-              <button class="pill" data-region="Africa">Afrique</button>
-              <button class="pill" data-region="Oceania">Océanie</button>
-            </div>
-          </div>
-          <div class="opt-g">
-            <div class="opt-lbl">Questions</div>
-            <div class="pill-row" id="qcPills">
-              <button class="pill active" data-n="10">10</button>
-              <button class="pill" data-n="20">20</button>
-              <button class="pill" data-n="30">30</button>
-            </div>
-          </div>
-        </div>
-        <button class="start-btn" onclick="startQuiz()">Jouer →</button>
-      </div>
-    </div>
-
-    <!-- ════ QUIZ ════ -->
-    <div class="screen" id="s-quiz">
-      <div class="quiz-wrap">
-        <div class="topbar">
-          <button class="back-btn" onclick="goTo('menu')">← Menu</button>
-          <div class="qstats">
-            <div class="qstat good"><strong id="sOk">0</strong>Correct</div>
-            <div class="qstat bad"><strong id="sErr">0</strong>Raté</div>
-            <div class="qstat"><strong id="sN">1/10</strong>Q.</div>
-          </div>
-        </div>
-        <div class="prog-w">
-          <div class="prog-b" id="progB" style="width: 0%"></div>
-        </div>
-        <div class="qcard" id="qcard">
-          <div class="q-lbl" id="qLbl"></div>
-          <div class="flag-wrap" id="flagWrap" style="display: none">
-            <div class="skel" id="flagSkel"></div>
-            <img id="flagImg" src="" alt="" />
-          </div>
-          <div class="q-txt" id="qTxt"></div>
-          <div class="q-sub" id="qSub" style="display: none"></div>
-          <div class="ans-grid" id="ansGrid"></div>
-          <div class="inp-w" id="inpW" style="display: none">
-            <input
-              class="txt-in"
-              id="txtIn"
-              autocomplete="off"
-              spellcheck="false" />
-            <button class="sub-btn" onclick="submitTxt()">OK</button>
-          </div>
-          <div class="feedback" id="fb"></div>
-          <button class="next-btn" id="nextBtn" onclick="nextQ()">
-            Question suivante →
-          </button>
+    <div class="opts-row">
+      <div class="opt-g">
+        <div class="opt-lbl">Région</div>
+        <div class="pill-row" id="regionPills">
+          <button class="pill active" data-region="all">Monde</button>
+          <button class="pill" data-region="Europe">Europe</button>
+          <button class="pill" data-region="Americas">Amériques</button>
+          <button class="pill" data-region="Asia">Asie</button>
+          <button class="pill" data-region="Africa">Afrique</button>
+          <button class="pill" data-region="Oceania">Océanie</button>
         </div>
       </div>
-    </div>
-
-    <!-- ════ RESULTS ════ -->
-    <div class="screen" id="s-results">
-      <div class="res-wrap">
-        <div class="arc-w">
-          <svg class="arc-svg" width="160" height="160" viewBox="0 0 160 160">
-            <defs>
-              <linearGradient id="arcG" x1="0%" y1="0%" x2="100%" y2="0%">
-                <stop offset="0%" stop-color="#f5c842" />
-                <stop offset="100%" stop-color="#e8533a" />
-              </linearGradient>
-            </defs>
-            <circle class="arc-bg" cx="80" cy="80" r="70" />
-            <circle
-              class="arc-fg"
-              id="arcFg"
-              cx="80"
-              cy="80"
-              r="70"
-              stroke-dasharray="440"
-              stroke-dashoffset="440" />
-          </svg>
-          <div class="arc-in">
-            <div class="arc-pct" id="arcPct">0%</div>
-            <div class="arc-lbl">Score</div>
-          </div>
-        </div>
-        <div class="res-title" id="resTitle"></div>
-        <div class="res-sub" id="resSub"></div>
-        <div class="res-det" id="resDet"></div>
-
-        <!-- Save score box -->
-        <div class="save-score-box">
-          <div class="save-title">💾 Enregistrer dans le classement</div>
-          <div class="save-row">
-            <input
-              class="save-inp"
-              id="saveName"
-              placeholder="Ton prénom"
-              autocomplete="off" />
-            <select class="save-sel" id="saveClasseSel">
-              <option value="">— Choisis ta classe —</option>
-            </select>
-          </div>
-          <div
-            id="saveNoClass"
-            style="
-              display: none;
-              font-size: 0.74rem;
-              color: var(--muted);
-              padding: 0.2rem 0;
-            ">
-            ⚠️ Aucune classe disponible — demande à ton professeur.
-          </div>
-          <button class="save-btn" onclick="saveScore()" style="width: 100%">
-            Enregistrer mon score →
-          </button>
-        </div>
-
-        <div class="res-btns">
-          <button class="start-btn" onclick="startQuiz()">Rejouer</button>
-          <button class="btn-ghost" onclick="goTo('menu')">Menu</button>
-          <button class="btn-ghost" onclick="goTo('board')">
-            Voir le classement
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <!-- ════ CARTE ════ -->
-    <div class="screen" id="s-map">
-      <div class="map-layout">
-        <div id="map-container">
-          <div id="leaflet-map"></div>
-        </div>
-        <div class="map-panel">
-          <div class="map-header">
-            <div class="map-title">🌍 Trouvez les pays</div>
-            <div class="map-score-row">
-              <div class="map-stat"><strong id="mFound">0</strong>Trouvés</div>
-              <div class="map-stat"><strong id="mTotal">—</strong>Total</div>
-              <div class="map-stat"><strong id="mPct">0%</strong>Score</div>
-            </div>
-            <div class="map-inp-w">
-              <input
-                class="map-inp"
-                id="mapInp"
-                placeholder="Tapez un pays…"
-                autocomplete="off"
-                spellcheck="false" />
-              <button class="map-sub-btn" onclick="mapSubmit()">→</button>
-            </div>
-            <div class="map-fb" id="mapFb"></div>
-          </div>
-          <div class="region-tabs">
-            <button class="rtab active" onclick="mapRegion('all', this)">
-              Tout
-            </button>
-            <button class="rtab" onclick="mapRegion('Europe', this)">
-              Europe
-            </button>
-            <button class="rtab" onclick="mapRegion('Americas', this)">
-              Amériques
-            </button>
-            <button class="rtab" onclick="mapRegion('Asia', this)">Asie</button>
-            <button class="rtab" onclick="mapRegion('Africa', this)">
-              Afrique
-            </button>
-            <button class="rtab" onclick="mapRegion('Oceania', this)">
-              Océanie
-            </button>
-          </div>
-          <div class="countries-list" id="countriesList"></div>
-          <button class="map-reset" onclick="resetMap()">
-            ↺ Réinitialiser la carte
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <!-- ════ CLASSEMENT ════ -->
-    <div class="screen" id="s-board">
-      <div class="board-wrap">
-        <div class="board-top">
-          <div class="board-title">🏆 Classement</div>
-          <div class="board-actions">
-            <button class="btn-sm" onclick="openAdmin()">🔑 Admin</button>
-          </div>
-        </div>
-
-        <!-- Add panel -->
-        <div class="add-panel" id="addPanel">
-          <div class="add-panel-title">Ajouter un score manuellement</div>
-          <div class="add-form">
-            <div class="add-field">
-              <label class="add-lbl">Prénom</label>
-              <input
-                class="add-inp"
-                id="aN"
-                placeholder="Ex: Marie"
-                style="width: 130px"
-                autocomplete="off" />
-            </div>
-            <div class="add-field">
-              <label class="add-lbl">Classe</label>
-              <select class="add-sel" id="aCsel" style="width: 130px">
-                <option value="">— Choisir —</option>
-                <option value="__new__">+ Nouvelle…</option>
-              </select>
-            </div>
-            <div class="add-field" id="aNewF" style="display: none">
-              <label class="add-lbl">Nouvelle classe</label>
-              <input
-                class="add-inp"
-                id="aNew"
-                placeholder="5ème A"
-                style="width: 130px" />
-            </div>
-            <div class="add-field">
-              <label class="add-lbl">Mode</label>
-              <select class="add-sel" id="aMode" style="width: 150px">
-                <option value="flag2country">Quel pays ?</option>
-                <option value="country2flag">Quel drapeau ?</option>
-                <option value="flag2capital">Drapeau → Capitale</option>
-                <option value="write-country">Écrire le pays</option>
-                <option value="write-capital">Écrire la capitale</option>
-                <option value="map">Carte monde</option>
-              </select>
-            </div>
-            <div class="add-field">
-              <label class="add-lbl">Score</label>
-              <input
-                class="add-inp"
-                id="aScore"
-                type="number"
-                min="0"
-                placeholder="17"
-                style="width: 70px" />
-            </div>
-            <div class="add-field">
-              <label class="add-lbl">/ Total</label>
-              <input
-                class="add-inp"
-                id="aTotal"
-                type="number"
-                min="1"
-                value="20"
-                style="width: 70px" />
-            </div>
-            <button class="add-ok-btn" onclick="addManual()">
-              Enregistrer
-            </button>
-          </div>
-        </div>
-
-        <div class="bstats" id="bStats"></div>
-
-        <div class="bfilters">
-          <div class="bfg">
-            <div class="bflbl">Classe</div>
-            <div class="pill-row" id="bClassPills"></div>
-          </div>
-          <div class="bfg">
-            <div class="bflbl">Mode</div>
-            <div class="pill-row" id="bModePills"></div>
-          </div>
-          <div class="bfg">
-            <div class="bflbl">Trier</div>
-            <div class="pill-row">
-              <button class="pill active" onclick="bSort('pct', this)">
-                Score
-              </button>
-              <button class="pill" onclick="bSort('date', this)">Date</button>
-              <button class="pill" onclick="bSort('name', this)">Nom</button>
-            </div>
-          </div>
-        </div>
-
-        <div id="podiumWrap"></div>
-
-        <div class="btable">
-          <div class="bthead">
-            <span class="tc-rank">#</span>
-            <span class="tc-name">Élève</span>
-            <span class="tc-classe">Classe</span>
-            <span class="tc-mode">Mode</span>
-            <span class="tc-score">Score</span>
-            <span class="tc-pct">%</span>
-            <span class="tc-date">Date</span>
-          </div>
-          <div id="bBody"></div>
-        </div>
-      </div>
-    </div>
-
-    <!-- ════ MODAL ADMIN ════ -->
-    <div
-      id="adminOverlay"
-      style="
-        display: none;
-        position: fixed;
-        inset: 0;
-        background: rgba(0, 0, 0, 0.7);
-        z-index: 900;
-        backdrop-filter: blur(6px);
-        align-items: center;
-        justify-content: center;
-      ">
-      <div
-        style="
-          background: var(--card);
-          border: 1px solid var(--border);
-          border-radius: 16px;
-          padding: 2rem;
-          width: min(440px, 92vw);
-          animation: slideUp 0.25s ease;
-        ">
-        <!-- Écran mot de passe -->
-        <div id="adminLogin">
-          <div
-            style="
-              font-family: &quot;Bebas Neue&quot;, sans-serif;
-              font-size: 1.6rem;
-              color: var(--accent);
-              margin-bottom: 1rem;
-            ">
-            🔑 Accès Professeur
-          </div>
-          <div
-            style="
-              font-size: 0.82rem;
-              color: var(--muted);
-              margin-bottom: 1rem;
-            ">
-            Entrez le mot de passe pour gérer les classes.
-          </div>
-          <div style="display: flex; gap: 0.6rem">
-            <input
-              id="adminPwdInp"
-              type="password"
-              class="add-inp"
-              placeholder="Mot de passe…"
-              style="flex: 1"
-              onkeydown="if (event.key === 'Enter') checkAdminPwd();" />
-            <button class="add-ok-btn" onclick="checkAdminPwd()">OK</button>
-          </div>
-          <div
-            id="adminPwdErr"
-            style="
-              color: var(--error);
-              font-size: 0.76rem;
-              margin-top: 0.5rem;
-              display: none;
-            ">
-            ❌ Mot de passe incorrect
-          </div>
-          <button
-            onclick="closeAdmin()"
-            style="
-              margin-top: 1rem;
-              background: none;
-              border: none;
-              color: var(--muted);
-              cursor: pointer;
-              font-size: 0.8rem;
-            ">
-            Annuler
-          </button>
-        </div>
-
-        <!-- Écran gestion classes -->
-        <div id="adminPanel" style="display: none">
-          <div
-            style="
-              display: flex;
-              justify-content: space-between;
-              align-items: center;
-              margin-bottom: 1.2rem;
-            ">
-            <div
-              style="
-                font-family: &quot;Bebas Neue&quot;, sans-serif;
-                font-size: 1.6rem;
-                color: var(--accent);
-              ">
-              🏫 Gestion des classes
-            </div>
-            <button
-              onclick="closeAdmin()"
-              style="
-                background: none;
-                border: none;
-                color: var(--muted);
-                cursor: pointer;
-                font-size: 1.2rem;
-              ">
-              ✕
-            </button>
-          </div>
-          <!-- Liste des classes -->
-          <div
-            id="adminClassesList"
-            style="
-              margin-bottom: 1rem;
-              max-height: 220px;
-              overflow-y: auto;
-              display: flex;
-              flex-direction: column;
-              gap: 0.4rem;
-            "></div>
-          <!-- Ajouter une classe -->
-          <div style="display: flex; gap: 0.6rem; margin-bottom: 0.5rem">
-            <input
-              id="adminNewClasse"
-              class="add-inp"
-              placeholder="Ex: 6ème A"
-              style="flex: 1"
-              onkeydown="if (event.key === 'Enter') adminAddClasse();" />
-            <button class="add-ok-btn" onclick="adminAddClasse()">
-              ➕ Ajouter
-            </button>
-          </div>
-          <div style="font-size: 0.72rem; color: var(--muted)">
-            Les élèves verront uniquement ces classes dans leur liste.
-          </div>
-
-          <!-- Actions scores -->
-          <div
-            style="
-              margin-top: 1.2rem;
-              padding-top: 1rem;
-              border-top: 1px solid var(--border);
-            ">
-            <div
-              style="
-                font-family: &quot;Bebas Neue&quot;, sans-serif;
-                font-size: 1.1rem;
-                color: var(--accent);
-                margin-bottom: 0.7rem;
-              ">
-              📊 Gestion des scores
-            </div>
-            <div style="display: flex; flex-wrap: wrap; gap: 0.5rem">
-              <button
-                class="btn-sm"
-                onclick="
-                  closeAdmin();
-                  toggleAddPanel();
-                ">
-                ➕ Ajouter un score
-              </button>
-              <button class="btn-sm" onclick="exportJSON()">
-                ⬇️ Exporter JSON
-              </button>
-              <label class="btn-sm" style="cursor: pointer"
-                >⬆️ Importer JSON<input
-                  type="file"
-                  accept=".json"
-                  style="display: none"
-                  onchange="importJSON(this)"
-              /></label>
-              <button class="btn-sm danger" onclick="resetBoard()">
-                🗑️ Tout effacer
-              </button>
-            </div>
-          </div>
+      <div class="opt-g">
+        <div class="opt-lbl">Questions</div>
+        <div class="pill-row" id="qcPills">
+          <button class="pill active" data-n="10">10</button>
+          <button class="pill" data-n="20">20</button>
+          <button class="pill" data-n="30">30</button>
         </div>
       </div>
     </div>
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script src="js/script.js"></script>
-  </body>
+    <button class="start-btn" onclick="startQuiz()">Jouer →</button>
+  </div>
+</div>
+
+<!-- ════ QUIZ ════ -->
+<div class="screen" id="s-quiz">
+  <div class="quiz-wrap">
+    <div class="topbar">
+      <button class="back-btn" onclick="goTo('menu')">← Menu</button>
+      <div class="qstats">
+        <div class="qstat good"><strong id="sOk">0</strong>Correct</div>
+        <div class="qstat bad"><strong id="sErr">0</strong>Raté</div>
+        <div class="qstat"><strong id="sN">1/10</strong>Q.</div>
+      </div>
+    </div>
+    <div class="prog-w"><div class="prog-b" id="progB" style="width:0%"></div></div>
+    <div class="qcard" id="qcard">
+      <div class="q-lbl" id="qLbl"></div>
+      <div class="flag-wrap" id="flagWrap" style="display:none">
+        <div class="skel" id="flagSkel"></div>
+        <img id="flagImg" src="" alt="">
+      </div>
+      <div class="q-txt" id="qTxt"></div>
+      <div class="q-sub" id="qSub" style="display:none"></div>
+      <div class="ans-grid" id="ansGrid"></div>
+      <div class="inp-w" id="inpW" style="display:none">
+        <input class="txt-in" id="txtIn" autocomplete="off" spellcheck="false">
+        <button class="sub-btn" onclick="submitTxt()">OK</button>
+      </div>
+      <div class="feedback" id="fb"></div>
+      <button class="next-btn" id="nextBtn" onclick="nextQ()">Question suivante →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════ RESULTS ════ -->
+<div class="screen" id="s-results">
+  <div class="res-wrap">
+    <div class="arc-w">
+      <svg class="arc-svg" width="160" height="160" viewBox="0 0 160 160">
+        <defs>
+          <linearGradient id="arcG" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stop-color="#f5c842"/><stop offset="100%" stop-color="#e8533a"/>
+          </linearGradient>
+        </defs>
+        <circle class="arc-bg" cx="80" cy="80" r="70"/>
+        <circle class="arc-fg" id="arcFg" cx="80" cy="80" r="70" stroke-dasharray="440" stroke-dashoffset="440"/>
+      </svg>
+      <div class="arc-in">
+        <div class="arc-pct" id="arcPct">0%</div>
+        <div class="arc-lbl">Score</div>
+      </div>
+    </div>
+    <div class="res-title" id="resTitle"></div>
+    <div class="res-sub" id="resSub"></div>
+    <div class="res-det" id="resDet"></div>
+
+    <!-- Save score box -->
+    <div class="save-score-box">
+      <div class="save-title">💾 Enregistrer dans le classement</div>
+      <div class="save-row">
+        <input class="save-inp" id="saveName" placeholder="Ton prénom" autocomplete="off">
+        <select class="save-sel" id="saveClasseSel">
+          <option value="">— Choisis ta classe —</option>
+        </select>
+      </div>
+      <div id="saveNoClass" style="display:none;font-size:.74rem;color:var(--muted);padding:.2rem 0">
+        ⚠️ Aucune classe disponible — demande à ton professeur.
+      </div>
+      <button class="save-btn" onclick="saveScore()" style="width:100%">Enregistrer mon score →</button>
+    </div>
+
+    <div class="res-btns">
+      <button class="start-btn" onclick="startQuiz()">Rejouer</button>
+      <button class="btn-ghost" onclick="goTo('menu')">Menu</button>
+      <button class="btn-ghost" onclick="goTo('board')">Voir le classement</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════ CARTE ════ -->
+<div class="screen" id="s-map">
+  <div class="map-layout">
+    <div id="map-container">
+      <div id="leaflet-map"></div>
+    </div>
+    <div class="map-panel">
+      <div class="map-header">
+        <div class="map-title">🌍 Trouvez les pays</div>
+        <div class="map-score-row">
+          <div class="map-stat"><strong id="mFound">0</strong>Trouvés</div>
+          <div class="map-stat"><strong id="mTotal">—</strong>Total</div>
+          <div class="map-stat"><strong id="mPct">0%</strong>Score</div>
+        </div>
+        <div class="map-inp-w">
+          <input class="map-inp" id="mapInp" placeholder="Tapez un pays…" autocomplete="off" spellcheck="false">
+          <button class="map-sub-btn" onclick="mapSubmit()">→</button>
+        </div>
+        <div class="map-fb" id="mapFb"></div>
+      </div>
+      <div class="region-tabs">
+        <button class="rtab active" onclick="mapRegion('all',this)">Tout</button>
+        <button class="rtab" onclick="mapRegion('Europe',this)">Europe</button>
+        <button class="rtab" onclick="mapRegion('Americas',this)">Amériques</button>
+        <button class="rtab" onclick="mapRegion('Asia',this)">Asie</button>
+        <button class="rtab" onclick="mapRegion('Africa',this)">Afrique</button>
+        <button class="rtab" onclick="mapRegion('Oceania',this)">Océanie</button>
+      </div>
+      <div class="countries-list" id="countriesList"></div>
+      <button class="map-reset" onclick="resetMap()">↺ Réinitialiser la carte</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════ CLASSEMENT ════ -->
+<div class="screen" id="s-board">
+  <div class="board-wrap">
+    <div class="board-top">
+      <div class="board-title">🏆 Classement</div>
+      <div class="board-actions">
+        <button class="btn-sm" onclick="openAdmin()">🔑 Admin</button>
+      </div>
+    </div>
+
+    <!-- Add panel -->
+    <div class="add-panel" id="addPanel">
+      <div class="add-panel-title">Ajouter un score manuellement</div>
+      <div class="add-form">
+        <div class="add-field">
+          <label class="add-lbl">Prénom</label>
+          <input class="add-inp" id="aN" placeholder="Ex: Marie" style="width:130px" autocomplete="off">
+        </div>
+        <div class="add-field">
+          <label class="add-lbl">Classe</label>
+          <select class="add-sel" id="aCsel" style="width:130px">
+            <option value="">— Choisir —</option>
+            <option value="__new__">+ Nouvelle…</option>
+          </select>
+        </div>
+        <div class="add-field" id="aNewF" style="display:none">
+          <label class="add-lbl">Nouvelle classe</label>
+          <input class="add-inp" id="aNew" placeholder="5ème A" style="width:130px">
+        </div>
+        <div class="add-field">
+          <label class="add-lbl">Mode</label>
+          <select class="add-sel" id="aMode" style="width:150px">
+            <option value="flag2country">Quel pays ?</option>
+            <option value="country2flag">Quel drapeau ?</option>
+            <option value="flag2capital">Drapeau → Capitale</option>
+            <option value="write-country">Écrire le pays</option>
+            <option value="write-capital">Écrire la capitale</option>
+            <option value="map">Carte monde</option>
+          </select>
+        </div>
+        <div class="add-field">
+          <label class="add-lbl">Score</label>
+          <input class="add-inp" id="aScore" type="number" min="0" placeholder="17" style="width:70px">
+        </div>
+        <div class="add-field">
+          <label class="add-lbl">/ Total</label>
+          <input class="add-inp" id="aTotal" type="number" min="1" value="20" style="width:70px">
+        </div>
+        <button class="add-ok-btn" onclick="addManual()">Enregistrer</button>
+      </div>
+    </div>
+
+    <div class="bstats" id="bStats"></div>
+
+    <div class="bfilters">
+      <div class="bfg">
+        <div class="bflbl">Classe</div>
+        <div class="pill-row" id="bClassPills"></div>
+      </div>
+      <div class="bfg">
+        <div class="bflbl">Mode</div>
+        <div class="pill-row" id="bModePills"></div>
+      </div>
+      <div class="bfg">
+        <div class="bflbl">Trier</div>
+        <div class="pill-row">
+          <button class="pill active" onclick="bSort('pct',this)">Score</button>
+          <button class="pill" onclick="bSort('date',this)">Date</button>
+          <button class="pill" onclick="bSort('name',this)">Nom</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="podiumWrap"></div>
+
+    <div class="btable">
+      <div class="bthead">
+        <span class="tc-rank">#</span>
+        <span class="tc-name">Élève</span>
+        <span class="tc-classe">Classe</span>
+        <span class="tc-mode">Mode</span>
+        <span class="tc-score">Score</span>
+        <span class="tc-pct">%</span>
+        <span class="tc-date">Date</span>
+      </div>
+      <div id="bBody"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ════ MODAL ADMIN ════ -->
+<div id="adminOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:900;backdrop-filter:blur(6px);align-items:center;justify-content:center;">
+  <div style="background:var(--card);border:1px solid var(--border);border-radius:16px;padding:2rem;width:min(440px,92vw);animation:slideUp .25s ease;">
+
+    <!-- Écran mot de passe -->
+    <div id="adminLogin">
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:1.6rem;color:var(--accent);margin-bottom:1rem;">🔑 Accès Professeur</div>
+      <div style="font-size:.82rem;color:var(--muted);margin-bottom:1rem;">Entrez le mot de passe pour gérer les classes.</div>
+      <div style="display:flex;gap:.6rem;">
+        <input id="adminPwdInp" type="password" class="add-inp" placeholder="Mot de passe…" style="flex:1" onkeydown="if(event.key==='Enter')checkAdminPwd()">
+        <button class="add-ok-btn" onclick="checkAdminPwd()">OK</button>
+      </div>
+      <div id="adminPwdErr" style="color:var(--error);font-size:.76rem;margin-top:.5rem;display:none;">❌ Mot de passe incorrect</div>
+      <button onclick="closeAdmin()" style="margin-top:1rem;background:none;border:none;color:var(--muted);cursor:pointer;font-size:.8rem;">Annuler</button>
+    </div>
+
+    <!-- Écran gestion classes -->
+    <div id="adminPanel" style="display:none;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.2rem;">
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:1.6rem;color:var(--accent);">🏫 Gestion des classes</div>
+        <button onclick="closeAdmin()" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:1.2rem;">✕</button>
+      </div>
+      <!-- Liste des classes -->
+      <div id="adminClassesList" style="margin-bottom:1rem;max-height:220px;overflow-y:auto;display:flex;flex-direction:column;gap:.4rem;"></div>
+      <!-- Ajouter une classe -->
+      <div style="display:flex;gap:.6rem;margin-bottom:.5rem;">
+        <input id="adminNewClasse" class="add-inp" placeholder="Ex: 6ème A" style="flex:1" onkeydown="if(event.key==='Enter')adminAddClasse()">
+        <button class="add-ok-btn" onclick="adminAddClasse()">➕ Ajouter</button>
+      </div>
+      <div style="font-size:.72rem;color:var(--muted);">Les élèves verront uniquement ces classes dans leur liste.</div>
+
+      <!-- Actions scores -->
+      <div style="margin-top:1.2rem;padding-top:1rem;border-top:1px solid var(--border);">
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:1.1rem;color:var(--accent);margin-bottom:.7rem;">📊 Gestion des scores</div>
+        <div style="display:flex;flex-wrap:wrap;gap:.5rem;">
+          <button class="btn-sm" onclick="closeAdmin();toggleAddPanel()">➕ Ajouter un score</button>
+          <button class="btn-sm" onclick="exportJSON()">⬇️ Exporter JSON</button>
+          <label class="btn-sm" style="cursor:pointer">⬆️ Importer JSON<input type="file" accept=".json" style="display:none" onchange="importJSON(this)"></label>
+          <button class="btn-sm danger" onclick="resetBoard()">🗑️ Tout effacer</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+'use strict';
+
+// ═══════════════════════════════════════════
+//  CONSTANTS
+// ═══════════════════════════════════════════
+const MODES_FR = {
+  flag2country:'Quel pays ?', country2flag:'Quel drapeau ?',
+  flag2capital:'Drapeau → Capitale', 'write-country':'Écrire le pays',
+  'write-capital':'Écrire la capitale', map:'Carte monde'
+};
+const MEDALS = ['🥇','🥈','🥉'];
+const REGION_FR = {Europe:'Europe',Americas:'Amériques',Asia:'Asie',Africa:'Afrique',Oceania:'Océanie',Antarctic:'Antarctique'};
+const LS_KEY = 'geoquiz-board-v2';
+
+// ═══════════════════════════════════════════
+//  GLOBAL STATE
+// ═══════════════════════════════════════════
+let countries = [];
+let geoData = null;
+let geoLayers = {};
+let foundSet = new Set();
+let leafletMap = null;
+let mapReady = false;
+
+// Quiz
+let pool=[], questions=[], curIdx=0, okCount=0, errCount=0, answered=false;
+let selMode='flag2country', selRegion='all', selN=10;
+// Last quiz result for saving
+let lastResult = null;
+
+// Board
+let boardData = { entries:[], classes:[] };
+let bFilterClass='all', bFilterMode='all', bSortBy='pct';
+let bPendingDel = null;
+let addPanelOpen = false;
+
+// ═══════════════════════════════════════════
+//  NAV
+// ═══════════════════════════════════════════
+const TABS = ['menu','quiz','map','board'];
+function goTo(id){
+  // Masquer tous les screens
+  document.querySelectorAll('.screen').forEach(s=>{
+    s.classList.remove('active');
+    s.style.display='none';
+  });
+  // Afficher le bon
+  const el=document.getElementById('s-'+id);
+  el.classList.add('active');
+  // display selon le type
+  if(id==='map') el.style.display='flex';
+  else if(id==='results') el.style.display='flex';
+  else if(id==='loader') el.style.display='flex';
+  else el.style.display='block';
+
+  document.querySelectorAll('.nav-tab').forEach((t,i)=>t.classList.toggle('active', TABS[i]===id));
+  if(id==='map') initMap();
+  if(id==='board'){ refreshAddClassSel(); renderBoard(); }
+}
+
+// ── THEME TOGGLE ──
+function getMapColors(){
+  const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+  return {
+    land:        isLight ? '#c8d8b0' : '#1e1e2e',
+    border:      isLight ? '#8aaa6a' : '#3a3a55',
+    found:       isLight ? '#2d7a4a' : '#1a3a2a',
+    foundBorder: isLight ? '#1a5a32' : '#5ecf8a',
+  };
+}
+function applyTheme(theme){
+  document.documentElement.setAttribute('data-theme', theme);
+  const btn = document.getElementById('themeToggle');
+  if(btn) btn.textContent = theme === 'light' ? '☀️' : '🌙';
+  localStorage.setItem('gq-theme', theme);
+  // Re-styler la carte si elle est initialisée
+  if(Object.keys(geoLayers).length > 0){
+    const c = getMapColors();
+    Object.entries(geoLayers).forEach(([id, layer]) => {
+      if(foundSet.has(id)){
+        layer.setStyle({fillColor:c.found, fillOpacity:.92, color:c.foundBorder, weight:1.2});
+      } else {
+        layer.setStyle({fillColor:c.land, fillOpacity:.9, color:c.border, weight:.8});
+      }
+    });
+  }
+}
+function toggleTheme(){
+  const current = document.documentElement.getAttribute('data-theme') || 'dark';
+  applyTheme(current === 'dark' ? 'light' : 'dark');
+}
+// Appliquer le thème sauvegardé au chargement
+applyTheme(localStorage.getItem('gq-theme') || 'dark');
+
+// Table de secours pour les noms FR des pays qui peuvent manquer dans l'API
+const FR_NAMES = {
+  'AFG':'Afghanistan','ALB':'Albanie','DZA':'Algérie','AND':'Andorre','AGO':'Angola',
+  'ATG':'Antigua-et-Barbuda','ARG':'Argentine','ARM':'Arménie','AUS':'Australie',
+  'AUT':'Autriche','AZE':'Azerbaïdjan','BHS':'Bahamas','BHR':'Bahreïn',
+  'BGD':'Bangladesh','BRB':'Barbade','BLR':'Biélorussie','BEL':'Belgique',
+  'BLZ':'Belize','BEN':'Bénin','BTN':'Bhoutan','BOL':'Bolivie',
+  'BIH':'Bosnie-Herzégovine','BWA':'Botswana','BRA':'Brésil','BRN':'Brunei',
+  'BGR':'Bulgarie','BFA':'Burkina Faso','BDI':'Burundi','CPV':'Cap-Vert',
+  'KHM':'Cambodge','CMR':'Cameroun','CAN':'Canada','CAF':'Centrafrique',
+  'TCD':'Tchad','CHL':'Chili','CHN':'Chine','CYP':'Chypre','COL':'Colombie',
+  'COM':'Comores','COG':'Congo','COD':'RD Congo','CRI':'Costa Rica',
+  'CIV':'Côte d\'Ivoire','HRV':'Croatie','CUB':'Cuba','DNK':'Danemark',
+  'DJI':'Djibouti','DOM':'République dominicaine','ECU':'Équateur','EGY':'Égypte',
+  'SLV':'Salvador','GNQ':'Guinée équatoriale','ERI':'Érythrée','EST':'Estonie',
+  'SWZ':'Eswatini','ETH':'Éthiopie','FJI':'Fidji','FIN':'Finlande','FRA':'France',
+  'GAB':'Gabon','GMB':'Gambie','GEO':'Géorgie','DEU':'Allemagne','GHA':'Ghana',
+  'GRC':'Grèce','GRD':'Grenade','GTM':'Guatemala','GIN':'Guinée','GNB':'Guinée-Bissau',
+  'GUY':'Guyana','HTI':'Haïti','HND':'Honduras','HUN':'Hongrie','ISL':'Islande',
+  'IND':'Inde','IDN':'Indonésie','IRN':'Iran','IRQ':'Irak','IRL':'Irlande',
+  'ISR':'Israël','ITA':'Italie','JAM':'Jamaïque','JPN':'Japon','JOR':'Jordanie',
+  'KAZ':'Kazakhstan','KEN':'Kenya','KIR':'Kiribati','PRK':'Corée du Nord',
+  'KOR':'Corée du Sud','KWT':'Koweït','KGZ':'Kirghizistan','LAO':'Laos',
+  'LVA':'Lettonie','LBN':'Liban','LSO':'Lesotho','LBR':'Liberia','LBY':'Libye',
+  'LIE':'Liechtenstein','LTU':'Lituanie','LUX':'Luxembourg','MDG':'Madagascar',
+  'MWI':'Malawi','MYS':'Malaisie','MDV':'Maldives','MLI':'Mali','MLT':'Malte',
+  'MHL':'Îles Marshall','MRT':'Mauritanie','MUS':'Maurice','MEX':'Mexique',
+  'FSM':'Micronésie','MDA':'Moldavie','MCO':'Monaco','MNG':'Mongolie',
+  'MNE':'Monténégro','MAR':'Maroc','MOZ':'Mozambique','MMR':'Myanmar',
+  'NAM':'Namibie','NRU':'Nauru','NPL':'Népal','NLD':'Pays-Bas','NZL':'Nouvelle-Zélande',
+  'NIC':'Nicaragua','NER':'Niger','NGA':'Nigéria','MKD':'Macédoine du Nord',
+  'NOR':'Norvège','OMN':'Oman','PAK':'Pakistan','PLW':'Palaos','PSE':'Palestine',
+  'PAN':'Panama','PNG':'Papouasie-Nouvelle-Guinée','PRY':'Paraguay','PER':'Pérou',
+  'PHL':'Philippines','POL':'Pologne','PRT':'Portugal','QAT':'Qatar',
+  'ROU':'Roumanie','RUS':'Russie','RWA':'Rwanda','KNA':'Saint-Christophe-et-Niévès',
+  'LCA':'Sainte-Lucie','VCT':'Saint-Vincent-et-les-Grenadines','WSM':'Samoa',
+  'SMR':'Saint-Marin','STP':'Sao Tomé-et-Principe','SAU':'Arabie saoudite',
+  'SEN':'Sénégal','SRB':'Serbie','SYC':'Seychelles','SLE':'Sierra Leone',
+  'SGP':'Singapour','SVK':'Slovaquie','SVN':'Slovénie','SLB':'Îles Salomon',
+  'SOM':'Somalie','ZAF':'Afrique du Sud','SSD':'Soudan du Sud','ESP':'Espagne',
+  'LKA':'Sri Lanka','SDN':'Soudan','SUR':'Suriname','SWE':'Suède','CHE':'Suisse',
+  'SYR':'Syrie','TWN':'Taïwan','TJK':'Tadjikistan','TZA':'Tanzanie','THA':'Thaïlande',
+  'TLS':'Timor oriental','TGO':'Togo','TON':'Tonga','TTO':'Trinité-et-Tobago',
+  'TUN':'Tunisie','TUR':'Turquie','TKM':'Turkménistan','TUV':'Tuvalu',
+  'UGA':'Ouganda','UKR':'Ukraine','ARE':'Émirats arabes unis','GBR':'Royaume-Uni',
+  'USA':'États-Unis','URY':'Uruguay','UZB':'Ouzbékistan','VUT':'Vanuatu',
+  'VAT':'Vatican','VEN':'Venezuela','VNM':'Viêt Nam','YEM':'Yémen',
+  'ZMB':'Zambie','ZWE':'Zimbabwe','DMA':'Dominique','BES':'Pays-Bas caribéens',
+  'SXM':'Saint-Martin (partie néerlandaise)','CUW':'Curaçao','ABW':'Aruba',
+  'GRL':'Groenland','FRO':'Îles Féroé','GIB':'Gibraltar','IMN':'Île de Man',
+  'JEY':'Jersey','GGY':'Guernesey','NCL':'Nouvelle-Calédonie','PYF':'Polynésie française',
+  'REU':'La Réunion','MYT':'Mayotte','GUF':'Guyane française','GLP':'Guadeloupe',
+  'MTQ':'Martinique','SPM':'Saint-Pierre-et-Miquelon','WLF':'Wallis-et-Futuna',
+  'MAF':'Saint-Martin (partie française)','BLM':'Saint-Barthélemy',
+  'ESH':'Sahara occidental','FLK':'Îles Malouines','SHN':'Sainte-Hélène',
+  'TCA':'Îles Turques-et-Caïques','VGB':'Îles Vierges britanniques',
+  'VIR':'Îles Vierges américaines','PRI':'Porto Rico','GUM':'Guam',
+  'ASM':'Samoa américaines','MNP':'Îles Mariannes du Nord','UMI':'Îles mineures éloignées des États-Unis',
+  'HKG':'Hong Kong','MAC':'Macao','CXR':'Île Christmas','CCK':'Îles Cocos',
+  'NFK':'Île Norfolk','PCN':'Îles Pitcairn','IOT':'Territoire britannique de l\'océan Indien',
+  'ATF':'Terres australes françaises','HMD':'Île Heard-et-Îles MacDonald',
+  'BMU':'Bermudes','CYM':'Îles Caïmans','MSR':'Montserrat','AIA':'Anguilla',
+  'NIU':'Niue','COK':'Îles Cook','TKL':'Tokelau','CXR':'Île Christmas',
+  // Pays dont le nom anglais de l'API est trompeur
+  'CZE':'République tchèque',
+  'XKX':'Kosovo',
+  'COD':'République démocratique du Congo',
+  'MKD':'Macédoine du Nord',
+  'PSE':'Palestine',
+  'VAT':'Vatican',
+  'TWN':'Taïwan',
+  'IRN':'Iran',
+  'LAO':'Laos',
+  'VNM':'Viêt Nam',
+  'PRK':'Corée du Nord',
+  'KOR':'Corée du Sud',
+  'GBR':'Royaume-Uni',
+  'USA':'États-Unis',
+  'ARE':'Émirats arabes unis',
+  'SAU':'Arabie saoudite',
+  'BOL':'Bolivie',
+  'VEN':'Venezuela',
+  'SWZ':'Eswatini',
+  'TLS':'Timor oriental',
+  'CPV':'Cap-Vert',
+};
+
+// Traductions françaises des capitales (cca3 → capitale en FR)
+const FR_CAPITALS = {
+  'AFG':'Kaboul','ALB':'Tirana','DZA':'Alger','AND':'Andorre-la-Vieille',
+  'AGO':'Luanda','ATG':'Saint-Jean','ARG':'Buenos Aires','ARM':'Erevan',
+  'AUS':'Canberra','AUT':'Vienne','AZE':'Bakou','BHS':'Nassau',
+  'BHR':'Manama','BGD':'Dacca','BRB':'Bridgetown','BLR':'Minsk',
+  'BEL':'Bruxelles','BLZ':'Belmopan','BEN':'Porto-Novo','BTN':'Thimphou',
+  'BOL':'Sucre','BIH':'Sarajevo','BWA':'Gaborone','BRA':'Brasilia',
+  'BRN':'Bandar Seri Begawan','BGR':'Sofia','BFA':'Ouagadougou',
+  'BDI':'Gitega','CPV':'Praia','KHM':'Phnom Penh','CMR':'Yaoundé',
+  'CAN':'Ottawa','CAF':'Bangui','TCD':'N\'Djaména','CHL':'Santiago',
+  'CHN':'Pékin','COL':'Bogota','COM':'Moroni','COG':'Brazzaville',
+  'COD':'Kinshasa','CRI':'San José','HRV':'Zagreb','CUB':'La Havane',
+  'CYP':'Nicosie','CZE':'Prague','DNK':'Copenhague','DJI':'Djibouti',
+  'DOM':'Saint-Domingue','ECU':'Quito','EGY':'Le Caire','SLV':'San Salvador',
+  'GNQ':'Malabo','ERI':'Asmara','EST':'Tallinn','SWZ':'Mbabane',
+  'ETH':'Addis-Abeba','FJI':'Suva','FIN':'Helsinki','FRA':'Paris',
+  'GAB':'Libreville','GMB':'Banjul','GEO':'Tbilissi','DEU':'Berlin',
+  'GHA':'Accra','GRC':'Athènes','GRD':'Saint-Georges','GTM':'Guatemala',
+  'GIN':'Conakry','GNB':'Bissau','GUY':'Georgetown','HTI':'Port-au-Prince',
+  'HND':'Tegucigalpa','HUN':'Budapest','ISL':'Reykjavik','IND':'New Delhi',
+  'IDN':'Jakarta','IRN':'Téhéran','IRQ':'Bagdad','IRL':'Dublin',
+  'ISR':'Jérusalem','ITA':'Rome','JAM':'Kingston','JPN':'Tokyo',
+  'JOR':'Amman','KAZ':'Astana','KEN':'Nairobi','KIR':'Tarawa du Sud',
+  'PRK':'Pyongyang','KOR':'Séoul','XKX':'Pristina','KWT':'Koweït',
+  'KGZ':'Bichkek','LAO':'Vientiane','LVA':'Riga','LBN':'Beyrouth',
+  'LSO':'Maseru','LBR':'Monrovia','LBY':'Tripoli','LIE':'Vaduz',
+  'LTU':'Vilnius','LUX':'Luxembourg','MDG':'Antananarivo','MWI':'Lilongwe',
+  'MYS':'Kuala Lumpur','MDV':'Malé','MLI':'Bamako','MLT':'La Valette',
+  'MHL':'Majuro','MRT':'Nouakchott','MUS':'Port-Louis','MEX':'Mexico',
+  'FSM':'Palikir','MDA':'Chișinău','MCO':'Monaco','MNG':'Oulan-Bator',
+  'MNE':'Podgorica','MAR':'Rabat','MOZ':'Maputo','MMR':'Naypyidaw',
+  'NAM':'Windhoek','NRU':'Yaren','NPL':'Katmandou','NLD':'Amsterdam',
+  'NZL':'Wellington','NIC':'Managua','NER':'Niamey','NGA':'Abuja',
+  'MKD':'Skopje','NOR':'Oslo','OMN':'Mascate','PAK':'Islamabad',
+  'PLW':'Ngerulmud','PAN':'Panama','PNG':'Port Moresby','PRY':'Asuncion',
+  'PER':'Lima','PHL':'Manille','POL':'Varsovie','PRT':'Lisbonne',
+  'QAT':'Doha','ROU':'Bucarest','RUS':'Moscou','RWA':'Kigali',
+  'KNA':'Basseterre','LCA':'Castries','VCT':'Kingstown','WSM':'Apia',
+  'SMR':'Saint-Marin','STP':'São Tomé','SAU':'Riyad','SEN':'Dakar',
+  'SRB':'Belgrade','SLE':'Freetown','SGP':'Singapour','SVK':'Bratislava',
+  'SVN':'Ljubljana','SLB':'Honiara','SOM':'Mogadiscio','ZAF':'Pretoria',
+  'SSD':'Djouba','ESP':'Madrid','LKA':'Sri Jayawardenepura Kotte',
+  'SDN':'Khartoum','SUR':'Paramaribo','SWE':'Stockholm','CHE':'Berne',
+  'SYR':'Damas','TWN':'Taipei','TJK':'Douchanbé','TZA':'Dodoma',
+  'THA':'Bangkok','TLS':'Dili','TGO':'Lomé','TON':'Nuku\'alofa',
+  'TTO':'Port-d\'Espagne','TUN':'Tunis','TUR':'Ankara','TKM':'Achgabat',
+  'TUV':'Funafuti','UGA':'Kampala','UKR':'Kiev','ARE':'Abou Dabi',
+  'GBR':'Londres','USA':'Washington','URY':'Montevideo','UZB':'Tachkent',
+  'VUT':'Port-Vila','VEN':'Caracas','VNM':'Hanoï','YEM':'Sanaa',
+  'ZMB':'Lusaka','ZWE':'Harare','ATF':'Port-aux-Français',
+  'BES':'Kralendijk','BLM':'Gustavia','CUW':'Willemstad',
+  'GLP':'Basse-Terre','GUF':'Cayenne','MTQ':'Fort-de-France',
+  'MYT':'Mamoudzou','NCL':'Nouméa','PYF':'Papeete','REU':'Saint-Denis',
+  'SPM':'Saint-Pierre','SXM':'Philipsburg','MAF':'Marigot',
+};
+
+// ═══════════════════════════════════════════
+//  LOAD API DATA
+// ═══════════════════════════════════════════
+async function loadAll(){
+  const bar=document.getElementById('lbar'), txt=document.getElementById('ltxt');
+  try{
+    bar.style.width='20%'; txt.textContent='Connexion aux APIs…';
+    const [cRes,gRes] = await Promise.all([
+      fetch('https://restcountries.com/v3.1/all?fields=name,capital,flags,cca2,cca3,region,population'),
+      fetch('https://raw.githubusercontent.com/johan/world.geo.json/master/countries.geo.json')
+    ]);
+    bar.style.width='65%'; txt.textContent='Traitement…';
+    const [cData,gRaw] = await Promise.all([cRes.json(), gRes.json()]);
+
+    countries = cData
+      .filter(c=>c.capital?.length && c.flags && c.name?.common)
+      .map(c=>{
+        // Priorité : table FR manuelle > traduction API > nom commun anglais
+        const nameFr = FR_NAMES[c.cca3]
+                    || c.name.translations?.fra?.common
+                    || c.name.common;
+        return {
+          name: c.name.common,
+          nameFr,
+          capital: c.capital[0],
+          capitalFr: FR_CAPITALS[c.cca3] || c.capital[0],
+          flag: c.flags.png || c.flags.svg || '',
+          cca2: (c.cca2||'').toLowerCase(),
+          cca3: c.cca3||'',
+          region: c.region||'',
+          aliases: buildAliases(c.name, nameFr, c.cca3)
+        };
+      });
+    geoData = gRaw;
+
+    bar.style.width='100%'; txt.textContent=`${countries.length} pays chargés !`;
+    await sleep(350);
+
+    loadBoard();
+    buildCountryList();
+    buildNameIndex(); // index nom→pays pour la carte
+
+    // Cacher le loader et montrer le menu — compatible CodePen
+    const loader = document.getElementById('s-loader');
+    loader.classList.remove('active');
+    loader.style.display = 'none';
+
+    const menu = document.getElementById('s-menu');
+    menu.classList.add('active');
+    menu.style.display = 'block';
+
+    document.querySelectorAll('.nav-tab')[0].classList.add('active');
+    document.getElementById('pillInfo').textContent=`${countries.length} pays disponibles`;
+  }catch(e){
+    txt.textContent='Erreur — vérifiez votre connexion.';
+    document.getElementById('lbar').style.background='var(--error)';
+    console.error(e);
+  }
+}
+
+// Formes alternatives françaises supplémentaires (pour le fuzzy match carte/quiz)
+const FR_ALIASES = {
+  'CZE':['Tchéquie','Rep. tchèque','Rép. tchèque'],
+  'COD':['RDC','Congo RDC','Congo démocratique','Rép. dém. du Congo'],
+  'COG':['Congo Brazzaville','République du Congo'],
+  'PRK':['Corée Nord','Corée-du-Nord'],
+  'KOR':['Corée Sud','Corée-du-Sud'],
+  'GBR':['Angleterre','Grande-Bretagne','UK'],
+  'USA':['Amérique','États Unis','Etats-Unis','Etats Unis','US'],
+  'ARE':['Émirats','Emirats'],
+  'SAU':['Arabie Saoudite'],
+  'RUS':['Fédération de Russie'],
+  'IRN':['Perse'],
+  'MMR':['Birmanie'],
+  'SWZ':['Swaziland'],
+  'TLS':['Timor-Leste','Timor-Oriental'],
+  'MKD':['Macédoine'],
+  'CPV':['Cap Vert'],
+  'STP':['São Tomé','Sao Tome'],
+  'TTO':['Trinité et Tobago','Trinidad'],
+  'KNA':['Saint-Kitts'],
+  'VCT':['Saint-Vincent'],
+  'TZA':['Tanzanie'],
+  'BIH':['Bosnie','Herzégovine'],
+  'ZAF':['Afrique du sud'],
+  'GNQ':['Guinée-Equatoriale'],
+  'PNG':['Papouasie'],
+  'CHN':['Chine populaire'],
+  'TWN':['Formose','Taiwan'],
+  'VNM':['Vietnam','Viet Nam'],
+  'PSE':['Territoires palestiniens','Gaza'],
+  'XKX':['Republique du Kosovo'],
+  'UKR':['Ukraïne'],
+  'MDA':['Moldavie','Moldova'],
+  'BLR':['Bélarus','Belarus'],
+  'KAZ':['Kazakstan'],
+  'UZB':['Ouzbekistan'],
+  'TKM':['Turkmenistan'],
+  'KGZ':['Kirghizie'],
+  'TJK':['Tadjikistan'],
+  'AZE':['Azerbaidjan'],
+  'MNG':['Mongolie extérieure'],
+};
+
+function buildAliases(name, nameFr, cca3){
+  // Stocker les formes BRUTES (non normalisées) — la normalisation se fait à la recherche
+  const s = new Set();
+  const add = v => { if(v && v.trim()) s.add(v.trim()); };
+  add(name.common);
+  add(name.official);
+  add(nameFr);
+  if(name.translations){
+    Object.values(name.translations).forEach(t => { add(t.common); add(t.official); });
+  }
+  // Ajouter les formes alternatives françaises
+  if(cca3 && FR_ALIASES[cca3]) FR_ALIASES[cca3].forEach(add);
+  return [...s];
+}
+function sleep(ms){return new Promise(r=>setTimeout(r,ms));}
+
+// ═══════════════════════════════════════════
+//  FUZZY MATCH
+// ═══════════════════════════════════════════
+function norm(s){
+  return s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/['\-]/g,' ').replace(/\s+/g,' ').trim();
+}
+function lev(a,b){
+  const m=a.length,n=b.length;
+  if(Math.abs(m-n)>3) return 99; // optimisation : skip si trop différent
+  const d=Array.from({length:m+1},(_,i)=>Array.from({length:n+1},(_,j)=>i?j?0:i:j));
+  for(let i=1;i<=m;i++) for(let j=1;j<=n;j++)
+    d[i][j]=a[i-1]===b[j-1]?d[i-1][j-1]:1+Math.min(d[i-1][j],d[i][j-1],d[i-1][j-1]);
+  return d[m][n];
+}
+function fuzzy(input, target){
+  const a = norm(input), b = norm(target);
+  if(!a || !b) return false;
+  if(a === b) return true;
+  // Tolérance aux fautes de frappe uniquement — PAS de substring match
+  // pour éviter "mali" → "somalia", "niger" → "nigeria", etc.
+  const maxDist = a.length <= 4 ? 0 : a.length <= 6 ? 1 : 2;
+  return lev(a, b) <= maxDist;
+}
+function matchCountry(input, c, field='name'){
+  const a = norm(input);
+  if(!a) return false;
+  if(field === 'name'){
+    // Tester le nom FR en premier (priorité), puis EN, puis aliases
+    const candidates = [c.nameFr, c.name, ...c.aliases];
+    return candidates.some(v => v && fuzzy(input, v));
+  } else {
+    return (c.capitalFr && fuzzy(input, c.capitalFr)) || (c.capital && fuzzy(input, c.capital));
+  }
+}
+
+// ═══════════════════════════════════════════
+//  MENU
+// ═══════════════════════════════════════════
+document.querySelectorAll('.mode-card').forEach(card=>{
+  card.addEventListener('click',()=>{
+    document.querySelectorAll('.mode-card').forEach(c=>c.classList.remove('selected'));
+    card.classList.add('selected'); selMode=card.dataset.mode;
+  });
+});
+document.querySelectorAll('#regionPills .pill').forEach(b=>{
+  b.addEventListener('click',()=>{
+    document.querySelectorAll('#regionPills .pill').forEach(x=>x.classList.remove('active'));
+    b.classList.add('active'); selRegion=b.dataset.region;
+  });
+});
+document.querySelectorAll('#qcPills .pill').forEach(b=>{
+  b.addEventListener('click',()=>{
+    document.querySelectorAll('#qcPills .pill').forEach(x=>x.classList.remove('active'));
+    b.classList.add('active'); selN=parseInt(b.dataset.n);
+  });
+});
+
+// ═══════════════════════════════════════════
+//  QUIZ
+// ═══════════════════════════════════════════
+function startQuiz(){
+  pool=countries.filter(c=>selRegion==='all'||c.region===selRegion);
+  if(pool.length<4){toast('Pas assez de pays pour ce filtre.','err');return;}
+  questions=shuffle(pool).slice(0,Math.min(selN,pool.length));
+  curIdx=0;okCount=0;errCount=0;answered=false;lastResult=null;
+  goTo('quiz'); updateStats(); renderQ();
+}
+
+function renderQ(){
+  answered=false;
+  const c=questions[curIdx];
+  document.getElementById('fb').className='feedback';
+  document.getElementById('fb').textContent='';
+  document.getElementById('nextBtn').className='next-btn';
+  document.getElementById('ansGrid').innerHTML='';
+  document.getElementById('ansGrid').style.display='grid';
+  document.getElementById('inpW').style.display='none';
+  document.getElementById('flagWrap').style.display='none';
+  document.getElementById('qSub').style.display='none';
+  updateProg(); updateStats();
+
+  const lbls={flag2country:'Quel pays ?',country2flag:'Quel drapeau ?',flag2capital:'Quelle est la capitale ?','write-country':'Écrivez le pays','write-capital':'Écrivez la capitale'};
+  document.getElementById('qLbl').textContent=lbls[selMode]||'Question';
+
+  if(selMode==='flag2country'){
+    showFlag(c); document.getElementById('qTxt').textContent='À quel pays appartient ce drapeau ?';
+    renderMCQ(getOpts(c,4),c,o=>o.nameFr||o.name);
+  } else if(selMode==='country2flag'){
+    document.getElementById('qTxt').textContent=`Quel est le drapeau de ${c.nameFr||c.name} ?`;
+    renderFlagMCQ(getOpts(c,4),c);
+  } else if(selMode==='flag2capital'){
+    showFlag(c);
+    document.getElementById('qTxt').textContent='Quelle est la capitale de ce pays ?';
+    document.getElementById('qSub').textContent=c.nameFr||c.name;
+    document.getElementById('qSub').style.display='block';
+    renderMCQ(getOpts(c,4),c,o=>o.capitalFr||o.capital);
+  } else if(selMode==='write-country'){
+    showFlag(c); document.getElementById('qTxt').textContent='Quel pays représente ce drapeau ?';
+    showInp('Nom du pays…');
+  } else if(selMode==='write-capital'){
+    showFlag(c); document.getElementById('qTxt').textContent=`Quelle est la capitale de ${c.nameFr||c.name} ?`;
+    showInp('Capitale…');
+  }
+}
+
+function showFlag(c){
+  document.getElementById('flagImg').src=c.flag;
+  document.getElementById('flagImg').alt=c.name;
+  document.getElementById('flagImg').style.display='none';
+  document.getElementById('flagSkel').style.display='block';
+  document.getElementById('flagWrap').style.display='block';
+  document.getElementById('flagImg').onload=()=>{
+    document.getElementById('flagSkel').style.display='none';
+    document.getElementById('flagImg').style.display='block';
+  };
+  document.getElementById('flagImg').onerror=()=>{
+    const c2=questions[curIdx];
+    if(c2&&c2.cca2) document.getElementById('flagImg').src=`https://flagcdn.com/w320/${c2.cca2}.png`;
+  };
+}
+
+function getOpts(c,n){return shuffle(pool.filter(x=>x.name!==c.name)).slice(0,n-1).concat(c);}
+
+function renderMCQ(opts,correctC,labelFn){
+  const grid=document.getElementById('ansGrid');
+  const sorted=shuffle(opts);
+  sorted.forEach(opt=>{
+    const btn=document.createElement('button');
+    btn.className='ans-btn'; btn.textContent=labelFn(opt);
+    btn.addEventListener('click',e=>{
+      if(answered)return; addRipple(btn,e);
+      resolveMCQ(opt.name===correctC.name,btn,sorted,correctC,labelFn);
+    });
+    grid.appendChild(btn);
+  });
+}
+
+function renderFlagMCQ(opts,correctC){
+  const grid=document.getElementById('ansGrid');
+  const sorted=shuffle(opts);
+  sorted.forEach(opt=>{
+    const btn=document.createElement('button');
+    btn.className='ans-btn'; btn.style.cssText='flex-direction:column;padding:.65rem;';
+    const img=document.createElement('img'); img.className='flag-opt';
+    img.src=opt.flag; img.alt=opt.name;
+    img.onerror=()=>{img.src=`https://flagcdn.com/w160/${opt.cca2}.png`;};
+    // Label caché par défaut — révélé après réponse
+    const lbl=document.createElement('span');
+    lbl.style.cssText='font-size:.68rem;color:var(--muted);margin-top:.2rem;visibility:hidden;';
+    lbl.textContent=opt.nameFr||opt.name;
+    btn.append(img,lbl);
+    btn.addEventListener('click',e=>{
+      if(answered)return; addRipple(btn,e);
+      resolveFlagMCQ(opt.name===correctC.name,btn,sorted,correctC);
+    });
+    grid.appendChild(btn);
+  });
+}
+
+function resolveMCQ(ok,btn,opts,correctC,labelFn){
+  answered=true;
+  document.querySelectorAll('.ans-btn').forEach(b=>b.disabled=true);
+  if(ok){btn.classList.add('correct');okCount++;showFb(true,'✓ Correct !');}
+  else{
+    btn.classList.add('wrong');errCount++;
+    const ct=labelFn(correctC);
+    document.querySelectorAll('.ans-btn').forEach(b=>{if(b.textContent===ct)b.classList.add('correct');});
+    showFb(false,`✗ C'était : ${ct}`);
+  }
+  updateStats(); document.getElementById('nextBtn').className='next-btn show';
+}
+
+function resolveFlagMCQ(ok,btn,opts,correctC){
+  answered=true;
+  document.querySelectorAll('.ans-btn').forEach(b=>{
+    b.disabled=true;
+    // Révéler tous les labels
+    const lbl=b.querySelector('span');
+    if(lbl) lbl.style.visibility='visible';
+  });
+  if(ok){btn.classList.add('correct');okCount++;showFb(true,'✓ Correct !');}
+  else{
+    btn.classList.add('wrong');errCount++;
+    document.querySelectorAll('.ans-btn')[opts.indexOf(correctC)]?.classList.add('correct');
+    showFb(false,`✗ C'était : ${correctC.nameFr||correctC.name}`);
+  }
+  updateStats(); document.getElementById('nextBtn').className='next-btn show';
+}
+
+function showInp(ph){
+  document.getElementById('ansGrid').style.display='none';
+  document.getElementById('inpW').style.display='flex';
+  const inp=document.getElementById('txtIn');
+  inp.value='';inp.className='txt-in';inp.disabled=false;inp.placeholder=ph;inp.focus();
+  inp.onkeydown=e=>{if(e.key==='Enter')submitTxt();};
+}
+
+function submitTxt(){
+  if(answered)return;
+  const c=questions[curIdx], val=document.getElementById('txtIn').value.trim();
+  if(!val)return;
+  answered=true; document.getElementById('txtIn').disabled=true;
+  const ok=selMode==='write-country'?matchCountry(val,c,'name'):matchCountry(val,c,'capital');
+  document.getElementById('txtIn').className='txt-in '+(ok?'correct':'wrong');
+  if(ok){okCount++;showFb(true,'✓ Correct !');}
+  else{errCount++;showFb(false,`✗ C'était : ${selMode==='write-country'?(c.nameFr||c.name):(c.capitalFr||c.capital)}`);}
+  updateStats(); document.getElementById('nextBtn').className='next-btn show';
+}
+
+function nextQ(){
+  curIdx++;
+  if(curIdx>=questions.length){showResults();return;}
+  const card=document.getElementById('qcard');
+  card.style.animation='none';
+  requestAnimationFrame(()=>{card.style.animation='';renderQ();});
+}
+
+function showFb(ok,msg){
+  const el=document.getElementById('fb');
+  el.className='feedback '+(ok?'correct':'wrong'); el.textContent=msg;
+}
+function updateProg(){
+  document.getElementById('progB').style.width=((curIdx/questions.length)*100)+'%';
+  document.getElementById('sN').textContent=`${curIdx+1}/${questions.length}`;
+}
+function updateStats(){
+  document.getElementById('sOk').textContent=okCount;
+  document.getElementById('sErr').textContent=errCount;
+}
+
+// ═══════════════════════════════════════════
+//  RESULTS + SAVE
+// ═══════════════════════════════════════════
+function showResults(){
+  goTo('results');
+  const total=questions.length, p=Math.round((okCount/total)*100);
+  const circ=2*Math.PI*70;
+  document.getElementById('arcPct').textContent=p+'%';
+  const fg=document.getElementById('arcFg');
+  fg.style.strokeDasharray=circ; fg.style.strokeDashoffset=circ;
+  setTimeout(()=>{fg.style.strokeDashoffset=circ-(p/100)*circ;},50);
+
+  const msgs=[[100,'🏆 Parfait !','Géographe hors pair !'],[80,'🌟 Excellent !','Très belle maîtrise !'],[60,'👏 Bien joué !','Bonne connaissance !'],[40,'📚 Pas mal !','Encore un peu d\'entraînement.'],[0,'🌍 Courage !','Le monde n\'a pas de secrets si on s\'entraîne.']];
+  const [,title,sub]=msgs.find(([t])=>p>=t);
+  document.getElementById('resTitle').textContent=title;
+  document.getElementById('resSub').textContent=sub;
+  document.getElementById('resDet').textContent=`${okCount} bonne${okCount>1?'s':''} réponse${okCount>1?'s':''} sur ${total}`;
+
+  lastResult={score:okCount, total, mode:selMode};
+  refreshSaveClasseSel();
+}
+
+function refreshSaveClasseSel(){
+  const sel = document.getElementById('saveClasseSel');
+  const noClass = document.getElementById('saveNoClass');
+  const classes = boardData.classes || [];
+  sel.innerHTML = '<option value="">— Choisis ta classe —</option>'
+    + classes.map(c=>`<option value="${c}">${c}</option>`).join('');
+  noClass.style.display = classes.length === 0 ? 'block' : 'none';
+  sel.style.display = classes.length === 0 ? 'none' : '';
+}
+
+function saveScore(){
+  if(!lastResult){toast('Aucun score à enregistrer','err');return;}
+  const name = document.getElementById('saveName').value.trim();
+  const classe = document.getElementById('saveClasseSel').value;
+  if(!name){toast('⚠️ Entre ton prénom !','err');return;}
+  if(!classe){toast('⚠️ Choisis ta classe !','err');return;}
+  pushEntry({name, classe, mode:lastResult.mode, score:lastResult.score, total:lastResult.total});
+  toast(`✅ Score de ${name} enregistré !`);
+  document.getElementById('saveName').value='';
+  document.getElementById('saveClasseSel').value='';
+  lastResult=null;
+}
+
+// ═══════════════════════════════════════════
+//  MAP
+// ═══════════════════════════════════════════
+// Table de correction : cca3 restcountries → id du GeoJSON Johan
+// Le GeoJSON de Johan utilise parfois d'anciens codes ISO ou des variantes
+const CCA3_TO_GEO = {
+  'AND':'AND','ARE':'ARE','AFG':'AFG','ATG':'ATG','AIA':'AIA','ALB':'ALB',
+  'ARM':'ARM','AGO':'AGO','ATA':'ATA','ARG':'ARG','ASM':'ASM','AUT':'AUT',
+  'AUS':'AUS','ABW':'ABW','AZE':'AZE','BIH':'BIH','BRB':'BRB','BGD':'BGD',
+  'BEL':'BEL','BFA':'BFA','BGR':'BGR','BHR':'BHR','BDI':'BDI','BEN':'BEN',
+  'BLM':'BLM','BMU':'BMU','BRN':'BRN','BOL':'BOL','BES':'BES','BRA':'BRA',
+  'BHS':'BHS','BTN':'BTN','BVT':'BVT','BWA':'BWA','BLR':'BLR','BLZ':'BLZ',
+  'CAN':'CAN','CCK':'CCK','COD':'COD','CAF':'CAF','COG':'COG','CHE':'CHE',
+  'CIV':'CIV','COK':'COK','CHL':'CHL','CMR':'CMR','CHN':'CHN','COL':'COL',
+  'CRI':'CRI','CUB':'CUB','CPV':'CPV','CXR':'CXR','CYP':'CYP','CZE':'CZE',
+  'DEU':'DEU','DJI':'DJI','DNK':'DNK','DMA':'DMA','DOM':'DOM','DZA':'DZA',
+  'ECU':'ECU','EST':'EST','EGY':'EGY','ESH':'ESH','ERI':'ERI','ESP':'ESP',
+  'ETH':'ETH','FIN':'FIN','FJI':'FJI','FLK':'FLK','FSM':'FSM','FRO':'FRO',
+  'FRA':'FRA','GAB':'GAB','GBR':'GBR','GRD':'GRD','GEO':'GEO','GUF':'GUF',
+  'GGY':'GGY','GHA':'GHA','GIB':'GIB','GRL':'GRL','GMB':'GMB','GIN':'GIN',
+  'GLP':'GLP','GNQ':'GNQ','GRC':'GRC','GTM':'GTM','GUM':'GUM','GNB':'GNB',
+  'GUY':'GUY','HKG':'HKG','HMD':'HMD','HND':'HND','HRV':'HRV','HTI':'HTI',
+  'HUN':'HUN','IDN':'IDN','IRL':'IRL','ISR':'ISR','IMN':'IMN','IND':'IND',
+  'IOT':'IOT','IRQ':'IRQ','IRN':'IRN','ISL':'ISL','ITA':'ITA','JEY':'JEY',
+  'JAM':'JAM','JOR':'JOR','JPN':'JPN','KEN':'KEN','KGZ':'KGZ','KHM':'KHM',
+  'KIR':'KIR','COM':'COM','KNA':'KNA','PRK':'PRK','KOR':'KOR','KWT':'KWT',
+  'CYM':'CYM','KAZ':'KAZ','LAO':'LAO','LBN':'LBN','LCA':'LCA','LIE':'LIE',
+  'LKA':'LKA','LBR':'LBR','LSO':'LSO','LTU':'LTU','LUX':'LUX','LVA':'LVA',
+  'LBY':'LBY','MAR':'MAR','MCO':'MCO','MDA':'MDA','MNE':'MNE','MAF':'MAF',
+  'MDG':'MDG','MHL':'MHL','MKD':'MKD','MLI':'MLI','MMR':'MMR','MNG':'MNG',
+  'MAC':'MAC','MNP':'MNP','MTQ':'MTQ','MRT':'MRT','MSR':'MSR','MLT':'MLT',
+  'MUS':'MUS','MDV':'MDV','MWI':'MWI','MEX':'MEX','MYS':'MYS','MOZ':'MOZ',
+  'NAM':'NAM','NCL':'NCL','NER':'NER','NFK':'NFK','NGA':'NGA','NIC':'NIC',
+  'NLD':'NLD','NOR':'NOR','NPL':'NPL','NRU':'NRU','NIU':'NIU','NZL':'NZL',
+  'OMN':'OMN','PAN':'PAN','PER':'PER','PYF':'PYF','PNG':'PNG','PHL':'PHL',
+  'PAK':'PAK','POL':'POL','SPM':'SPM','PCN':'PCN','PRI':'PRI','PSE':'PSE',
+  'PRT':'PRT','PLW':'PLW','PRY':'PRY','QAT':'QAT','REU':'REU','ROU':'ROU',
+  'SRB':'SRB','RUS':'RUS','RWA':'RWA','SAU':'SAU','SLB':'SLB','SYC':'SYC',
+  'SDN':'SDN','SWE':'SWE','SGP':'SGP','SHN':'SHN','SVN':'SVN','SJM':'SJM',
+  'SVK':'SVK','SLE':'SLE','SMR':'SMR','SEN':'SEN','SOM':'SOM','SUR':'SUR',
+  'SSD':'SSD','STP':'STP','SLV':'SLV','SXM':'SXM','SYR':'SYR','SWZ':'SWZ',
+  'TCA':'TCA','TCD':'TCD','ATF':'ATF','TGO':'TGO','THA':'THA','TJK':'TJK',
+  'TKL':'TKL','TLS':'TLS','TKM':'TKM','TUN':'TUN','TON':'TON','TUR':'TUR',
+  'TTO':'TTO','TUV':'TUV','TWN':'TWN','TZA':'TZA','UKR':'UKR','UGA':'UGA',
+  'UMI':'UMI','USA':'USA','URY':'URY','UZB':'UZB','VAT':'VAT','VCT':'VCT',
+  'VEN':'VEN','VGB':'VGB','VIR':'VIR','VNM':'VNM','VUT':'VUT','WLF':'WLF',
+  'WSM':'WSM','YEM':'YEM','MYT':'MYT','ZAF':'ZAF','ZMB':'ZMB','ZWE':'ZWE',
+  // Corrections Johan GeoJSON (codes anciens/différents)
+  'ROU':'ROU',  // Roumanie — Johan utilise aussi ROU maintenant
+  'MKD':'MKD',  // Macédoine du Nord
+  'SWZ':'SWZ',  // Eswatini (ex-Swaziland)
+  'TLS':'TLS',  // Timor-Leste
+  'COD':'COD',  // RD Congo (Johan a parfois ZAR)
+  'SSD':'SSD',  // Soudan du Sud
+  'XKX':'XKX',  // Kosovo (pas de code ISO officiel)
+};
+
+// Codes que Johan utilise différemment de restcountries
+const GEO_OVERRIDE = {
+  // restcountries_cca3 : geojson_id
+  'ROU':'ROU',
+  'COD':'COD', // restcountries utilise COD, Johan aussi
+  'SSD':'SSD',
+  'PSE':'PSE',
+  'TWN':'TWN',
+  'XKX':'XKX',
+  'MKD':'MKD',
+};
+
+function getGeoId(cca3){
+  return GEO_OVERRIDE[cca3] || cca3;
+}
+
+// Index nom normalisé → pays (construit après chargement des pays)
+let nameToCountry = {};
+
+function buildNameIndex(){
+  nameToCountry = {};
+  countries.forEach(c=>{
+    // Indexer toutes les formes brutes des noms (aliases contient des strings bruts)
+    c.aliases.forEach(rawName => {
+      if(rawName) nameToCountry[norm(rawName)] = c;
+    });
+    // S'assurer que nameFr et name sont bien indexés
+    if(c.nameFr) nameToCountry[norm(c.nameFr)] = c;
+    if(c.name)   nameToCountry[norm(c.name)]   = c;
+  });
+}
+
+// Index geoJSON name → cca3, construit lors du chargement du GeoJSON
+let geoNameToCca3 = {};  // norm(feat.properties.name) → cca3
+
+function initMap(){
+  if(mapReady||!geoData)return;
+  mapReady=true;
+
+  leafletMap=L.map('leaflet-map',{
+    center:[20,10], zoom:2,
+    minZoom:2, maxZoom:7,
+    maxBounds:[[-85,-180],[85,180]],
+    maxBoundsViscosity:1.0,
+    worldCopyJump:false,
+    zoomControl:true
+  });
+
+  // Charger le GeoJSON et stocker les layers
+  L.geoJSON(geoData,{
+    style:()=>{const c=getMapColors();return{fillColor:c.land,fillOpacity:.9,color:c.border,weight:.8};},
+    onEachFeature:(feat,layer)=>{
+      const geoId = feat.id; // ex: "CAN", "MEX", "FRA"
+      geoLayers[geoId] = layer;
+      // Aussi indexer par nom normalisé du GeoJSON
+      if(feat.properties?.name) geoNameToCca3[norm(feat.properties.name)] = geoId;
+    }
+  }).addTo(leafletMap);
+
+  updateMapStats();
+  document.getElementById('mapInp').addEventListener('keydown',e=>{if(e.key==='Enter')mapSubmit();});
+}
+
+function findGeoLayer(cca3){
+  if(!cca3) return null;
+  const up = cca3.toUpperCase();
+  // 1. Direct par cca3
+  if(geoLayers[up]) return geoLayers[up];
+  // 2. Via table de correction
+  const corrected = getGeoId(up);
+  if(geoLayers[corrected]) return geoLayers[corrected];
+  // 3. Chercher par le nom français/anglais du pays dans l'index GeoJSON
+  const c = countries.find(x=>x.cca3===cca3);
+  if(c){
+    const candidates = [c.nameFr, c.name, ...c.aliases];
+    for(const name of candidates){
+      const geoId = geoNameToCca3[norm(name)];
+      if(geoId && geoLayers[geoId]) return geoLayers[geoId];
+    }
+  }
+  return null;
+}
+
+function mapSubmit(){
+  const inp=document.getElementById('mapInp');
+  const val=inp.value.trim(); if(!val)return;
+
+  // Recherche : d'abord exact dans l'index, puis fuzzy sur nameFr/name
+  const nVal = norm(val);
+  let match = nameToCountry[nVal]; // exact match normalisé
+  if(!match){
+    // Fuzzy : parcourir les pays, priorité nameFr
+    match = countries.find(c=>fuzzy(val, c.nameFr))
+         || countries.find(c=>fuzzy(val, c.name));
+  }
+
+  if(!match){
+    setMapFb('❌ Pays introuvable — tapez le nom en français.','err');
+    inp.classList.add('flash-err'); setTimeout(()=>inp.classList.remove('flash-err'),600); return;
+  }
+  if(foundSet.has(match.cca3)){
+    setMapFb(`✓ ${match.nameFr||match.name} déjà trouvé !`,'hint');
+    inp.value=''; return;
+  }
+
+  foundSet.add(match.cca3);
+  inp.value=''; inp.classList.add('flash-ok'); setTimeout(()=>inp.classList.remove('flash-ok'),600);
+  setMapFb(`✅ ${match.nameFr||match.name} — capitale : ${match.capitalFr||match.capital}`,'ok');
+
+  const layer = findGeoLayer(match.cca3);
+  if(layer){
+    const c = getMapColors();
+    layer.setStyle({fillColor:c.found,fillOpacity:.92,color:c.foundBorder,weight:1.2});
+    placeFlagMarker(match, layer);
+    try{ leafletMap.fitBounds(layer.getBounds(),{padding:[40,40],maxZoom:5,animate:true}); }catch(e){}
+  }
+
+  updateMapStats();
+  buildCountryList(); // rebuild complet pour révéler le pays dans la sidebar
+}
+
+// ── Markers drapeaux ──
+let flagMarkers = {}; // cca3 → L.Marker
+
+// Calcule le centroïde réel d'un feature GeoJSON (moyenne pondérée des coords)
+function getFeatureCentroid(feat){
+  try{
+    const coords = [];
+    const collect = ring => ring.forEach(pt => coords.push(pt));
+    const geom = feat.feature ? feat.feature.geometry : feat.geometry;
+    if(!geom) return null;
+    if(geom.type === 'Polygon'){
+      collect(geom.coordinates[0]);
+    } else if(geom.type === 'MultiPolygon'){
+      // Prendre le plus grand polygone (plus grande aire)
+      let best = null, bestArea = 0;
+      geom.coordinates.forEach(poly => {
+        const ring = poly[0];
+        // Aire approximative = nb de points × amplitude
+        const lngs = ring.map(p=>p[0]), lats = ring.map(p=>p[1]);
+        const area = (Math.max(...lngs)-Math.min(...lngs)) * (Math.max(...lats)-Math.min(...lats));
+        if(area > bestArea){ bestArea = area; best = ring; }
+      });
+      if(best) collect(best);
+    }
+    if(!coords.length) return null;
+    const lng = coords.reduce((s,p)=>s+p[0],0)/coords.length;
+    const lat = coords.reduce((s,p)=>s+p[1],0)/coords.length;
+    return L.latLng(lat, lng);
+  }catch(e){ return null; }
+}
+
+function placeFlagMarker(country, layer){
+  try{
+    // Centroïde réel du polygone, pas juste le centre de la bounding box
+    const center = getFeatureCentroid(layer) || layer.getBounds().getCenter();
+    const icon = L.divIcon({
+      className:'flag-marker',
+      html:`<div class="flag-marker-inner"><img src="${country.flag}" alt="${country.nameFr}" onerror="this.src='https://flagcdn.com/w40/${country.cca2}.png'"></div>`,
+      iconSize:[32,22],
+      iconAnchor:[16,11]
+    });
+    const marker = L.marker(center, {icon, interactive:false, zIndexOffset:500});
+    marker.addTo(leafletMap);
+    flagMarkers[country.cca3] = marker;
+  }catch(e){}
+}
+
+function removeAllFlagMarkers(){
+  Object.values(flagMarkers).forEach(m=>{ try{ leafletMap.removeLayer(m); }catch(e){} });
+  flagMarkers = {};
+}
+
+function setMapFb(msg,type){
+  const el=document.getElementById('mapFb');
+  el.className='map-fb '+type; el.textContent=msg;
+  clearTimeout(setMapFb._t); setMapFb._t=setTimeout(()=>{el.className='map-fb';el.textContent='';},3000);
+}
+
+function updateMapStats(){
+  const total=countries.length, found=foundSet.size;
+  document.getElementById('mFound').textContent=found;
+  document.getElementById('mTotal').textContent=total;
+  document.getElementById('mPct').textContent=Math.round((found/total)*100)+'%';
+}
+
+function resetMap(){
+  if(!confirm('Réinitialiser la carte ?'))return;
+  foundSet.clear();
+  Object.values(geoLayers).forEach(l=>{const c=getMapColors();l.setStyle({fillColor:c.land,fillOpacity:.9,color:c.border,weight:.8});});
+  document.querySelectorAll('.ctag.found').forEach(t=>t.classList.remove('found'));
+  removeAllFlagMarkers();
+  updateMapStats(); buildCountryList();
+  if(leafletMap) leafletMap.setView([20,10],2);
+}
+
+function buildCountryList(filterR='all'){
+  const list=document.getElementById('countriesList');
+  list.innerHTML='';
+  const byR={};
+  countries.forEach(c=>{
+    if(filterR!=='all'&&c.region!==filterR)return;
+    const r=c.region||'Other';
+    if(!byR[r])byR[r]=[];
+    byR[r].push(c);
+  });
+  Object.entries(byR).sort(([a],[b])=>a.localeCompare(b)).forEach(([region,arr])=>{
+    const foundArr=arr.filter(c=>foundSet.has(c.cca3));
+    const sec=document.createElement('div'); sec.className='region-section';
+    const hd=document.createElement('div'); hd.className='region-h';
+    hd.dataset.region=region;
+    hd.innerHTML=`${REGION_FR[region]||region}<span class="rcount">${foundArr.length}/${arr.length}</span>`;
+    sec.appendChild(hd);
+    arr.sort((a,b)=>(a.nameFr||a.name).localeCompare(b.nameFr||b.name)).forEach(c=>{
+      const tag=document.createElement('span');
+      if(foundSet.has(c.cca3)){
+        // Pays trouvé → afficher nom + drapeau
+        tag.className='ctag found';
+        tag.dataset.cca3=c.cca3;
+        tag.innerHTML=`<img src="${c.flag}" style="width:14px;height:auto;border-radius:2px;vertical-align:middle;" onerror="this.style.display='none'"> ${c.nameFr||c.name}`;
+      } else {
+        // Pas encore trouvé → point d'interrogation
+        tag.className='ctag hidden-country';
+        tag.dataset.cca3=c.cca3;
+        tag.innerHTML=`<span style="opacity:.3">?</span>`;
+        tag.title='';
+      }
+      sec.appendChild(tag);
+    });
+    list.appendChild(sec);
+  });
+}
+
+function updateRegionCounts(){
+  document.querySelectorAll('.region-h').forEach(hd=>{
+    const r=hd.dataset.region;
+    if(!r)return;
+    const arr=countries.filter(c=>c.region===r);
+    const f=arr.filter(c=>foundSet.has(c.cca3)).length;
+    const span=hd.querySelector('.rcount');
+    if(span) span.textContent=`${f}/${arr.length}`;
+  });
+  // Révéler les pays trouvés dans la sidebar
+  foundSet.forEach(cca3=>{
+    const tag=document.querySelector(`.ctag[data-cca3="${cca3}"]`);
+    if(tag && !tag.classList.contains('found')){
+      const c=countries.find(x=>x.cca3===cca3);
+      if(c){
+        tag.className='ctag found';
+        tag.innerHTML=`<img src="${c.flag}" style="width:14px;height:auto;border-radius:2px;vertical-align:middle;" onerror="this.style.display='none'"> ${c.nameFr||c.name}`;
+      }
+    }
+  });
+}
+
+function mapRegion(region,btn){
+  document.querySelectorAll('.rtab').forEach(t=>t.classList.remove('active')); btn.classList.add('active');
+  buildCountryList(region);
+  if(!leafletMap)return;
+  if(region==='all'){leafletMap.setView([20,10],2);return;}
+  let bounds=null;
+  countries.filter(c=>c.region===region).forEach(c=>{
+    const l=findGeoLayer(c.cca3);
+    if(l){ try{ bounds=bounds?bounds.extend(l.getBounds()):l.getBounds(); }catch(e){} }
+  });
+  if(bounds) leafletMap.fitBounds(bounds,{padding:[30,30]});
+}
+
+// ═══════════════════════════════════════════
+// ═══════════════════════════════════════════
+//  FIREBASE — Realtime Database
+// ═══════════════════════════════════════════
+const firebaseConfig = {
+  apiKey: "AIzaSyDvngJrbB6-g4IJTN2k1nbFVIb7bAqytHE",
+  authDomain: "geoquiz-676ac.firebaseapp.com",
+  databaseURL: "https://geoquiz-676ac-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "geoquiz-676ac",
+  storageBucket: "geoquiz-676ac.firebasestorage.app",
+  messagingSenderId: "22397346126",
+  appId: "1:22397346126:web:46840ab5deff5812437e1f",
+  measurementId: "G-JC9WQRJQJM"
+};
+
+// Init Firebase
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+const scoresRef = db.ref('scores');
+
+// Écoute en temps réel → met à jour boardData.entries + affichage dès qu'un score arrive
+scoresRef.on('value', snapshot => {
+  const data = snapshot.val() || {};
+  const entries = Object.values(data);
+  boardData.entries = entries;
+  // Rafraîchir si l'onglet classement est visible
+  if(document.getElementById('s-board').style.display !== 'none'){
+    refreshAddClassSel();
+    renderBoard();
+  }
+  // Rafraîchir aussi les selects de sauvegarde
+  refreshSaveClasseSel();
+});
+
+function loadBoard(){
+  // Rien à faire — Firebase écoute en temps réel via scoresRef.on()
+}
+
+async function saveBoard(){
+  // Rien à faire — chaque pushEntry écrit directement dans Firebase
+}
+
+async function pushEntry(obj){
+  const entry = {
+    id: Date.now()+'_'+Math.random().toString(36).slice(2),
+    ts: Date.now(),
+    ...obj
+  };
+  // Écriture dans Firebase
+  try{
+    await scoresRef.child(entry.id).set(entry);
+  }catch(e){
+    toast('❌ Erreur de connexion Firebase','err');
+    console.error(e);
+  }
+}
+
+// helpers
+function pct(s,t){return t>0?Math.round((s/t)*100):0;}
+function gColor(p){return p>=90?'#4caf78':p>=70?'#f5c842':p>=50?'#e8a23a':'#e8533a';}
+function gEmoji(p){return p===100?'🏆':p>=90?'🌟':p>=70?'👏':p>=50?'📚':'💪';}
+function fmtDate(ts){const d=new Date(ts);return d.toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit',year:'2-digit'})+' '+d.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});}
+
+function bestPerStudent(list){
+  const map={};
+  list.forEach(e=>{const p=pct(e.score,e.total);if(!map[e.name]||p>pct(map[e.name].score,map[e.name].total))map[e.name]=e;});
+  return Object.values(map).sort((a,b)=>pct(b.score,b.total)-pct(a.score,a.total));
+}
+
+function bSort(s,btn){
+  bSortBy=s;
+  document.querySelectorAll('#s-board .bfg:last-child .pill').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active'); renderBoard();
+}
+
+function renderBoard(){
+  const filtered=boardData.entries
+    .filter(e=>bFilterClass==='all'||e.classe===bFilterClass)
+    .filter(e=>bFilterMode==='all'||e.mode===bFilterMode)
+    .sort((a,b)=>{
+      if(bSortBy==='pct')return pct(b.score,b.total)-pct(a.score,a.total);
+      if(bSortBy==='date')return b.ts-a.ts;
+      return a.name.localeCompare(b.name);
+    });
+  const ranked=bestPerStudent(filtered);
+
+  // Stats
+  const avg=filtered.length?Math.round(filtered.reduce((s,e)=>s+pct(e.score,e.total),0)/filtered.length):0;
+  const best=filtered.length?Math.max(...filtered.map(e=>pct(e.score,e.total))):0;
+  document.getElementById('bStats').innerHTML=[
+    ['👤',ranked.length,'Élèves'],['🎯',filtered.length,'Parties'],['📊',avg+'%','Moyenne'],['🏆',best+'%','Record']
+  ].map(([icon,val,lbl])=>`<div class="bstat"><span class="bstat-icon">${icon}</span><span class="bstat-val">${val}</span><span class="bstat-lbl">${lbl}</span></div>`).join('');
+
+  // Class pills
+  document.getElementById('bClassPills').innerHTML=
+    ['all',...boardData.classes].map(c=>`<button class="pill${bFilterClass===c?' active':''}" onclick="bSetClass('${c}',this)">${c==='all'?'Toutes':c}</button>`).join('');
+
+  // Mode pills
+  document.getElementById('bModePills').innerHTML=
+    `<button class="pill${bFilterMode==='all'?' active':''}" onclick="bSetMode('all',this)">Tous</button>`
+    +Object.entries(MODES_FR).map(([k,v])=>`<button class="pill${bFilterMode===k?' active':''}" onclick="bSetMode('${k}',this)">${v}</button>`).join('');
+
+  // Podium
+  const pw=document.getElementById('podiumWrap');
+  if(ranked.length>=3){
+    const order=[ranked[1],ranked[0],ranked[2]];
+    const heights=[95,125,75], barClrs=['#9090a0','#f5c842','#c87941'], realPos=[1,0,2];
+    pw.innerHTML=`<div class="podium">${order.map((e,i)=>{const p=pct(e.score,e.total);return `<div class="pod-item"><span class="pod-medal">${MEDALS[realPos[i]]}</span><span class="pod-name">${e.name}</span><span class="pod-pct" style="color:${gColor(p)}">${p}%</span><span class="pod-classe">${e.classe}</span><div class="pod-bar" style="height:${heights[i]}px;background:${barClrs[i]};opacity:.85"></div></div>`;}).join('')}</div>`;
+  } else { pw.innerHTML=''; }
+
+  // Table
+  const body=document.getElementById('bBody');
+  if(!filtered.length){
+    body.innerHTML='<div class="empty-board">Aucun score enregistré.<br>Jouez un quiz et sauvegardez votre score, ou ajoutez-en un manuellement.</div>'; return;
+  }
+  body.innerHTML=filtered.map((e,i)=>{
+    const p=pct(e.score,e.total);
+    const ri=ranked.findIndex(r=>r.name===e.name&&r.classe===e.classe);
+    const rankDisp=bSortBy==='pct'&&ri>=0&&ri<3?MEDALS[ri]:`<span style="color:var(--muted)">${i+1}</span>`;
+    return `<div class="btr">
+      <span class="tc-rank">${rankDisp}</span>
+      <span class="tc-name" style="font-weight:500">${gEmoji(p)} ${e.name}</span>
+      <span class="tc-classe"><span class="cbadge">${e.classe}</span></span>
+      <span class="tc-mode" style="color:var(--muted);font-size:.74rem">${MODES_FR[e.mode]||e.mode}</span>
+      <span class="tc-score" style="color:var(--muted);font-size:.76rem">${e.score}/${e.total}</span>
+      <span class="tc-pct"><span class="pct-n" style="color:${gColor(p)}">${p}%</span></span>
+      <span class="tc-date" style="color:var(--muted);font-size:.72rem">${fmtDate(e.ts)}</span>
+    </div>`;
+  }).join('');
+}
+
+function bSetClass(c,btn){bFilterClass=c;document.querySelectorAll('#bClassPills .pill').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderBoard();}
+function bSetMode(m,btn){bFilterMode=m;document.querySelectorAll('#bModePills .pill').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderBoard();}
+function bAskDel(id){bPendingDel=id;renderBoard();}
+function bCancelDel(){bPendingDel=null;renderBoard();}
+async function bConfirmDel(id){
+  try{ await scoresRef.child(id).remove(); }catch(e){ toast('❌ Erreur suppression','err'); return; }
+  bPendingDel=null; toast('🗑️ Score supprimé');
+}
+async function resetBoard(){
+  if(!confirm('Effacer tout le classement ?'))return;
+  try{ await scoresRef.remove(); }catch(e){ toast('❌ Erreur réinitialisation','err'); return; }
+  bFilterClass='all'; bFilterMode='all';
+  toast('🗑️ Classement réinitialisé');
+}
+
+// Add panel
+function toggleAddPanel(){addPanelOpen=!addPanelOpen;document.getElementById('addPanel').classList.toggle('open',addPanelOpen);}
+
+function refreshAddClassSel(){
+  const sel = document.getElementById('aCsel');
+  if(!sel) return;
+  sel.innerHTML = '<option value="">— Choisir —</option>'
+    + (boardData.classes||[]).map(c=>`<option value="${c}">${c}</option>`).join('');
+  const newF = document.getElementById('aNewF');
+  if(newF) newF.style.display = 'none';
+}
+function addManual(){
+  const name=document.getElementById('aN').value.trim();
+  const sv=document.getElementById('aCsel').value, nv=document.getElementById('aNew').value.trim();
+  const classe=sv==='__new__'||sv===''?nv:sv;
+  const mode=document.getElementById('aMode').value;
+  const score=parseInt(document.getElementById('aScore').value);
+  const total=parseInt(document.getElementById('aTotal').value);
+  if(!name){toast('⚠️ Entrez un prénom','err');return;}
+  if(!classe){toast('⚠️ Choisissez ou créez une classe','err');return;}
+  if(isNaN(score)||isNaN(total)||score<0||total<1||score>total){toast('⚠️ Score invalide','err');return;}
+  pushEntry({name,classe,mode,score,total});
+  document.getElementById('aN').value=''; document.getElementById('aScore').value='';
+  toast(`✅ Score de ${name} enregistré !`);
+  refreshAddClassSel(); renderBoard();
+}
+
+// JSON export/import
+function exportJSON(){
+  const blob=new Blob([JSON.stringify(boardData,null,2)],{type:'application/json'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download=`geoquiz-classement-${new Date().toISOString().slice(0,10)}.json`;
+  a.click(); URL.revokeObjectURL(a.href);
+  toast('⬇️ Fichier exporté !');
+}
+function importJSON(input){
+  const file=input.files[0]; if(!file)return;
+  const r=new FileReader();
+  r.onload=async e=>{
+    try{
+      const d=JSON.parse(e.target.result);
+      if(!d.entries||!d.classes) throw new Error();
+      const existing=new Set(boardData.entries.map(e=>e.id));
+      const newE=d.entries.filter(e=>!existing.has(e.id));
+      // Écrire dans Firebase
+      const updates={};
+      newE.forEach(entry=>{ updates[entry.id]=entry; });
+      await scoresRef.update(updates);
+      toast(`✅ ${newE.length} score(s) importé(s) !`);
+      refreshAddClassSel(); renderBoard();
+    }catch{ toast('❌ Fichier JSON invalide','err'); }
+  };
+  r.readAsText(file); input.value='';
+}
+
+// ═══════════════════════════════════════════
+//  UTILS
+// ═══════════════════════════════════════════
+function shuffle(arr){const a=[...arr];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+
+function addRipple(btn,e){
+  const r=document.createElement('span'); r.className='ripple';
+  const rect=btn.getBoundingClientRect(), sz=Math.max(rect.width,rect.height)*2;
+  r.style.cssText=`width:${sz}px;height:${sz}px;left:${e.clientX-rect.left-sz/2}px;top:${e.clientY-rect.top-sz/2}px`;
+  btn.appendChild(r); setTimeout(()=>r.remove(),550);
+}
+
+function toast(msg,type='ok'){
+  const el=document.getElementById('toast');
+  el.textContent=msg; el.className=type; el.style.display='block';
+  clearTimeout(toast._t); toast._t=setTimeout(()=>el.style.display='none',2800);
+}
+
+// ═══════════════════════════════════════════
+//  ADMIN — Gestion des classes
+// ═══════════════════════════════════════════
+const ADMIN_PWD = 'prof2024'; // ← change ce mot de passe !
+const classesRef = db.ref('classes');
+
+// Écoute en temps réel les classes
+classesRef.on('value', snapshot => {
+  const data = snapshot.val() || {};
+  boardData.classes = Object.values(data).sort();
+  refreshSaveClasseSel();
+  refreshAddClassSel();
+  renderAdminClasses();
+});
+
+function openAdmin(){
+  document.getElementById('adminOverlay').classList.add('open');
+  document.getElementById('adminLogin').style.display = 'block';
+  document.getElementById('adminPanel').style.display = 'none';
+  document.getElementById('adminPwdInp').value = '';
+  document.getElementById('adminPwdErr').style.display = 'none';
+  setTimeout(()=>document.getElementById('adminPwdInp').focus(), 100);
+}
+
+function closeAdmin(){
+  document.getElementById('adminOverlay').classList.remove('open');
+}
+
+function checkAdminPwd(){
+  const val = document.getElementById('adminPwdInp').value;
+  if(val === ADMIN_PWD){
+    document.getElementById('adminLogin').style.display = 'none';
+    document.getElementById('adminPanel').style.display = 'block';
+    renderAdminClasses();
+  } else {
+    document.getElementById('adminPwdErr').style.display = 'block';
+    document.getElementById('adminPwdInp').value = '';
+    document.getElementById('adminPwdInp').focus();
+  }
+}
+
+function renderAdminClasses(){
+  const el = document.getElementById('adminClassesList');
+  if(!el) return;
+  const classes = boardData.classes || [];
+  if(classes.length === 0){
+    el.innerHTML = '<div style="color:var(--muted);font-size:.8rem;text-align:center;padding:.8rem">Aucune classe. Ajoutez-en une ci-dessous.</div>';
+    return;
+  }
+  el.innerHTML = classes.map(c=>`
+    <div class="classe-row">
+      <span>🏫 ${c}</span>
+      <button class="del-classe" onclick="adminDelClasse('${c.replace(/'/g,"\\'")}')">🗑 Supprimer</button>
+    </div>`).join('');
+}
+
+async function adminAddClasse(){
+  const inp = document.getElementById('adminNewClasse');
+  const name = inp.value.trim();
+  if(!name){ toast('⚠️ Entrez un nom de classe','err'); return; }
+  if(boardData.classes.includes(name)){ toast('⚠️ Cette classe existe déjà','err'); return; }
+  const id = name.replace(/[^a-zA-Z0-9]/g,'_');
+  await classesRef.child(id).set(name);
+  inp.value = '';
+  toast(`✅ Classe "${name}" ajoutée !`);
+}
+
+async function adminDelClasse(name){
+  if(!confirm(`Supprimer la classe "${name}" ?`)) return;
+  const id = name.replace(/[^a-zA-Z0-9]/g,'_');
+  await classesRef.child(id).remove();
+  toast(`🗑️ Classe "${name}" supprimée`);
+}
+
+// ═══════════════════════════════════════════
+//  EXPOSE GLOBALS — requis pour CodePen
+// ═══════════════════════════════════════════
+window.openAdmin        = openAdmin;
+window.toggleTheme      = toggleTheme;
+window.closeAdmin       = closeAdmin;
+window.checkAdminPwd    = checkAdminPwd;
+window.adminAddClasse   = adminAddClasse;
+window.adminDelClasse   = adminDelClasse;
+window.goTo            = goTo;
+window.startQuiz       = startQuiz;
+window.submitTxt       = submitTxt;
+window.nextQ           = nextQ;
+window.saveScore       = saveScore;
+window.mapSubmit       = mapSubmit;
+window.mapRegion       = mapRegion;
+window.resetMap        = resetMap;
+window.bSort           = bSort;
+window.bSetClass       = bSetClass;
+window.bSetMode        = bSetMode;
+window.bAskDel         = bAskDel;
+window.bCancelDel      = bCancelDel;
+window.bConfirmDel     = bConfirmDel;
+window.resetBoard      = resetBoard;
+window.toggleAddPanel  = toggleAddPanel;
+function onAddClasseSel(){} // stub — plus de nouvelle classe manuelle
+window.onAddClasseSel  = onAddClasseSel;
+window.addManual       = addManual;
+window.exportJSON      = exportJSON;
+window.importJSON      = importJSON;
+
+// ═══════════════════════════════════════════
+//  INIT
+// ═══════════════════════════════════════════
+loadAll();
+</script>
+</body>
 </html>
