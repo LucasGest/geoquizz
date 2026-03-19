@@ -48,9 +48,7 @@ geoquiz/
 ├── index.html          # Application principale (SPA)
 ├── og-image.png        # Image Open Graph pour les partages
 ├── sitemap.xml         # Sitemap pour le référencement
-├── robots.txt          # Directives pour les crawlers
-└── admin/
-    └── index.html      # Interface d'administration
+└── robots.txt          # Directives pour les crawlers
 ```
 
 ---
@@ -102,16 +100,6 @@ const firebaseConfig = {
 └── classes/
     └── {id}          — Nom de la classe (ex: "6ème A")
 ```
-
----
-
-## 👨‍🏫 Utilisation en classe
-
-1. Le professeur accède au **panneau admin** via le bouton 🔑 dans le classement
-2. Il ajoute ses classes depuis l'interface d'administration
-3. Les élèves sélectionnent leur classe avant chaque quiz
-4. Les scores apparaissent en temps réel dans le classement
-5. L'admin peut **exporter** les scores en JSON ou **réinitialiser** le classement
 
 ---
 
