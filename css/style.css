@@ -13,8 +13,6 @@
   --nav-bg: rgba(8, 8, 16, 0.95);
   --grid-color: rgba(245, 200, 66, 0.025);
 }
-
-
 [data-theme="light"] {
   --bg: #f4f4f0;
   --surface: #eaeae4;
@@ -87,11 +85,6 @@ nav {
   background-clip: text;
   white-space: nowrap;
 }
-
-.nav-logo a{
-  text-decoration: none;
-}
-
 .nav-tabs {
   display: flex;
   gap: 0.25rem;
@@ -1555,4 +1548,53 @@ nav {
   .add-form {
     flex-direction: column;
   }
+}
+
+/* ══ PAGINATION ══ */
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 1.2rem 0.5rem 0.5rem;
+}
+
+.pg-btn {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.8rem;
+  width: 34px;
+  height: 34px;
+  border-radius: 7px;
+  cursor: pointer;
+  transition: all 0.15s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pg-btn:hover:not(:disabled) {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.pg-btn.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #000;
+  font-weight: 600;
+}
+
+.pg-btn:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+
+.pg-dots {
+  color: var(--muted);
+  font-size: 0.85rem;
+  padding: 0 0.2rem;
+  line-height: 34px;
 }
