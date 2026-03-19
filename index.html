@@ -81,23 +81,23 @@
   </div>
   <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" title="Changer le thème">🌙</button>
 </nav>
-
+ 
 <div id="toast"></div>
-
+ 
 <!-- ════ LOADER ════ -->
 <div class="screen active" id="s-loader" style="display:flex">
   <div class="ld-logo">GéoQuiz</div>
   <div class="ld-bar-w"><div class="ld-bar" id="lbar" style="width:5%"></div></div>
   <div class="ld-txt" id="ltxt">Chargement des pays…</div>
 </div>
-
+ 
 <!-- ════ MENU ════ -->
 <div class="screen" id="s-menu">
   <div class="menu-wrap">
     <div class="menu-hero">GéoQuiz</div>
     <div class="menu-sub">Drapeaux · Capitales · Pays</div>
     <div class="pill-info" id="pillInfo">Chargement…</div>
-
+ 
     <div class="modes-grid">
       <div class="mode-card selected" data-mode="flag2country"><div class="mc-icon">🏳️</div><div class="mc-name">Quel pays ?</div><div class="mc-desc">Un drapeau → trouvez le nom parmi 4 choix.</div></div>
       <div class="mode-card" data-mode="country2flag"><div class="mc-icon">🔍</div><div class="mc-name">Quel drapeau ?</div><div class="mc-desc">Un nom de pays → trouvez le bon drapeau.</div></div>
@@ -105,7 +105,7 @@
       <div class="mode-card" data-mode="write-country"><div class="mc-icon">✍️</div><div class="mc-name">Écrire le pays</div><div class="mc-desc">Un drapeau → tapez le nom (approximatif accepté !).</div></div>
       <div class="mode-card" data-mode="write-capital"><div class="mc-icon">🗺️</div><div class="mc-name">Écrire la capitale</div><div class="mc-desc">Un pays → tapez sa capitale (approximatif accepté !).</div></div>
     </div>
-
+ 
     <div class="opts-row">
       <div class="opt-g">
         <div class="opt-lbl">Région</div>
@@ -130,7 +130,7 @@
     <button class="start-btn" onclick="startQuiz()">Jouer →</button>
   </div>
 </div>
-
+ 
 <!-- ════ QUIZ ════ -->
 <div class="screen" id="s-quiz">
   <div class="quiz-wrap">
@@ -161,7 +161,7 @@
     </div>
   </div>
 </div>
-
+ 
 <!-- ════ RESULTS ════ -->
 <div class="screen" id="s-results">
   <div class="res-wrap">
@@ -183,7 +183,7 @@
     <div class="res-title" id="resTitle"></div>
     <div class="res-sub" id="resSub"></div>
     <div class="res-det" id="resDet"></div>
-
+ 
     <!-- Save score box -->
     <div class="save-score-box">
       <div class="save-title">💾 Enregistrer dans le classement</div>
@@ -198,7 +198,7 @@
       </div>
       <button class="save-btn" onclick="saveScore()" style="width:100%">Enregistrer mon score →</button>
     </div>
-
+ 
     <div class="res-btns">
       <button class="start-btn" onclick="startQuiz()">Rejouer</button>
       <button class="btn-ghost" onclick="goTo('menu')">Menu</button>
@@ -206,7 +206,7 @@
     </div>
   </div>
 </div>
-
+ 
 <!-- ════ CARTE ════ -->
 <div class="screen" id="s-map">
   <div class="map-layout">
@@ -240,7 +240,7 @@
     </div>
   </div>
 </div>
-
+ 
 <!-- ════ CLASSEMENT ════ -->
 <div class="screen" id="s-board">
   <div class="board-wrap">
@@ -250,7 +250,7 @@
         <button class="btn-sm" onclick="openAdmin()">🔑 Admin</button>
       </div>
     </div>
-
+ 
     <!-- Add panel -->
     <div class="add-panel" id="addPanel">
       <div class="add-panel-title">Ajouter un score manuellement</div>
@@ -292,9 +292,9 @@
         <button class="add-ok-btn" onclick="addManual()">Enregistrer</button>
       </div>
     </div>
-
+ 
     <div class="bstats" id="bStats"></div>
-
+ 
     <div class="bfilters">
       <div class="bfg">
         <div class="bflbl">Classe</div>
@@ -313,9 +313,9 @@
         </div>
       </div>
     </div>
-
+ 
     <div id="podiumWrap"></div>
-
+ 
     <div class="btable">
       <div class="bthead">
         <span class="tc-rank">#</span>
@@ -330,11 +330,11 @@
     </div>
   </div>
 </div>
-
+ 
 <!-- ════ MODAL ADMIN ════ -->
 <div id="adminOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:900;backdrop-filter:blur(6px);align-items:center;justify-content:center;">
   <div style="background:var(--card);border:1px solid var(--border);border-radius:16px;padding:2rem;width:min(440px,92vw);animation:slideUp .25s ease;">
-
+ 
     <!-- Écran mot de passe -->
     <div id="adminLogin">
       <div style="font-family:'Bebas Neue',sans-serif;font-size:1.6rem;color:var(--accent);margin-bottom:1rem;">🔑 Accès Professeur</div>
@@ -346,7 +346,7 @@
       <div id="adminPwdErr" style="color:var(--error);font-size:.76rem;margin-top:.5rem;display:none;">❌ Mot de passe incorrect</div>
       <button onclick="closeAdmin()" style="margin-top:1rem;background:none;border:none;color:var(--muted);cursor:pointer;font-size:.8rem;">Annuler</button>
     </div>
-
+ 
     <!-- Écran gestion classes -->
     <div id="adminPanel" style="display:none;">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.2rem;">
@@ -361,7 +361,7 @@
         <button class="add-ok-btn" onclick="adminAddClasse()">➕ Ajouter</button>
       </div>
       <div style="font-size:.72rem;color:var(--muted);">Les élèves verront uniquement ces classes dans leur liste.</div>
-
+ 
       <!-- Actions scores -->
       <div style="margin-top:1.2rem;padding-top:1rem;border-top:1px solid var(--border);">
         <div style="font-family:'Bebas Neue',sans-serif;font-size:1.1rem;color:var(--accent);margin-bottom:.7rem;">📊 Gestion des scores</div>
