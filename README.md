@@ -121,18 +121,6 @@ const firebaseConfig = {
 
 ---
 
-## 🤝 Contribuer
-
-Les contributions sont les bienvenues ! Pour proposer une amélioration :
-
-1. Fork le projet
-2. Crée une branche (`git checkout -b feature/ma-feature`)
-3. Commit (`git commit -m 'feat: ajout de ...'`)
-4. Push (`git push origin feature/ma-feature`)
-5. Ouvre une Pull Request
-
----
-
 ## 📄 Licence
 
 Distribué sous licence **MIT**. Voir `LICENSE` pour plus d'informations.
